@@ -1,0 +1,14 @@
+class A {
+    var x;
+    method A() {
+        x = "A Var";
+    }
+}
+class Main {
+  method Main() {
+    var a;
+    a = new A();
+
+    print(a.x);
+  }
+}
