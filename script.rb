@@ -34,10 +34,12 @@ def run_k(opt, modul:, rules:)
     pid = wait_thr.pid
     puts "pid: #{pid}"
     wait_for_prompt(stdout)
-    run_gdb_command('k start', stdin, stdout)
+    first_out = run_gdb_command('k start', stdin, stdout)
 
     exited = false
     depth = 0
+
+    results << Result.new(Rule.new('Initial Configuration', ''), depth, extract_configration(first_out))
 
     until exited
       depth += 1

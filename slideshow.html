@@ -1,0 +1,304 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Configuration Slideshow</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100%;
+            margin: 0;
+        }
+        .slideshow-container {
+            width: 60%;
+            background-color: #f8f8f8;
+            padding: 20px;
+            border: 1px solid #ddd;
+            box-shadow: 0px 0px 10px rgba(0, 0, 0, 0.1);
+            position: relative;
+        }
+        .slide {
+            display: none;
+        }
+        .active {
+            display: block;
+        }
+        .navigation {
+            position: absolute;
+            top: 100%;
+            width: 100%;
+            display: flex;
+            justify-content: space-between;
+            transform: translateY(-50%);
+        }
+        .prev, .next {
+            background-color: #333;
+            color: white;
+            padding: 10px;
+            cursor: pointer;
+            user-select: none;
+        }
+        pre {
+            background-color: #f8f8f8;
+            padding: 10px;
+            border: 1px solid #ddd;
+            overflow-x: auto;
+        }
+    </style>
+</head>
+<body>
+
+<div class="slideshow-container">
+
+  <div class="navigation">
+    <span class="prev" onclick="changeSlide(-1)">&#10094; Prev</span>
+    <span class="next" onclick="changeSlide(1)">Next &#10095;</span>
+  </div>
+
+    <div class="slide active">
+        <h2>Depth 0</h2>
+        <h3>Before Configuration</h3>
+        <pre>
+&lt;T&gt;
+  &lt;k&gt;
+    int n, sum, x, .Ids
+    x = 100
+    n = 100
+    sum = 0
+    sum = n + 120 ~&gt; .K
+  &lt;/k&gt;
+  &lt;state&gt;
+    .Map
+  &lt;/state&gt;
+&lt;/T&gt;
+        </pre>
+
+        <h3>Rewrite Rule</h3>
+        <h4>Initial Configuration</h4>
+        <pre>
+
+        </pre>
+        <h3>After Configuration</h3>
+        <pre>
+&lt;T&gt;
+  &lt;k&gt;
+    int sum, x, .Ids
+    x = 100
+    n = 100
+    sum = 0
+    sum = n + 120 ~&gt; .K
+  &lt;/k&gt;
+  &lt;state&gt;
+    n |-&gt; 0
+  &lt;/state&gt;
+&lt;/T&gt;
+        </pre>
+    </div>
+    <div class="slide ">
+        <h2>Depth 7</h2>
+        <h3>Before Configuration</h3>
+        <pre>
+&lt;T&gt;
+  &lt;k&gt;
+    x = 100 ~&gt; n = 100 ~&gt; sum = 0 ~&gt; sum = n + 120 ~&gt; .K
+  &lt;/k&gt;
+  &lt;state&gt;
+    n |-&gt; 0
+    sum |-&gt; 0
+    x |-&gt; 0
+  &lt;/state&gt;
+&lt;/T&gt;
+        </pre>
+
+        <h3>Rewrite Rule</h3>
+        <h4>assign</h4>
+        <pre>
+&lt;k&gt; X = I:Int; =&gt; .K ...&lt;/k&gt; &lt;state&gt;... X |-&gt; (_ =&gt; I) ...&lt;/state&gt;
+
+        </pre>
+        <h3>After Configuration</h3>
+        <pre>
+&lt;T&gt;
+  &lt;k&gt;
+    n = 100 ~&gt; sum = 0 ~&gt; sum = n + 120 ~&gt; .K
+  &lt;/k&gt;
+  &lt;state&gt;
+    n |-&gt; 0
+    sum |-&gt; 0
+    x |-&gt; 100
+  &lt;/state&gt;
+&lt;/T&gt;
+        </pre>
+    </div>
+    <div class="slide ">
+        <h2>Depth 8</h2>
+        <h3>Before Configuration</h3>
+        <pre>
+&lt;T&gt;
+  &lt;k&gt;
+    n = 100 ~&gt; sum = 0 ~&gt; sum = n + 120 ~&gt; .K
+  &lt;/k&gt;
+  &lt;state&gt;
+    n |-&gt; 0
+    sum |-&gt; 0
+    x |-&gt; 100
+  &lt;/state&gt;
+&lt;/T&gt;
+        </pre>
+
+        <h3>Rewrite Rule</h3>
+        <h4>assign</h4>
+        <pre>
+&lt;k&gt; X = I:Int; =&gt; .K ...&lt;/k&gt; &lt;state&gt;... X |-&gt; (_ =&gt; I) ...&lt;/state&gt;
+
+        </pre>
+        <h3>After Configuration</h3>
+        <pre>
+&lt;T&gt;
+  &lt;k&gt;
+    sum = 0 ~&gt; sum = n + 120 ~&gt; .K
+  &lt;/k&gt;
+  &lt;state&gt;
+    n |-&gt; 100
+    sum |-&gt; 0
+    x |-&gt; 100
+  &lt;/state&gt;
+&lt;/T&gt;
+        </pre>
+    </div>
+    <div class="slide ">
+        <h2>Depth 9</h2>
+        <h3>Before Configuration</h3>
+        <pre>
+&lt;T&gt;
+  &lt;k&gt;
+    sum = 0 ~&gt; sum = n + 120 ~&gt; .K
+  &lt;/k&gt;
+  &lt;state&gt;
+    n |-&gt; 100
+    sum |-&gt; 0
+    x |-&gt; 100
+  &lt;/state&gt;
+&lt;/T&gt;
+        </pre>
+
+        <h3>Rewrite Rule</h3>
+        <h4>assign</h4>
+        <pre>
+&lt;k&gt; X = I:Int; =&gt; .K ...&lt;/k&gt; &lt;state&gt;... X |-&gt; (_ =&gt; I) ...&lt;/state&gt;
+
+        </pre>
+        <h3>After Configuration</h3>
+        <pre>
+&lt;T&gt;
+  &lt;k&gt;
+    sum = n + 120 ~&gt; .K
+  &lt;/k&gt;
+  &lt;state&gt;
+    n |-&gt; 100
+    sum |-&gt; 0
+    x |-&gt; 100
+  &lt;/state&gt;
+&lt;/T&gt;
+        </pre>
+    </div>
+    <div class="slide ">
+        <h2>Depth 12</h2>
+        <h3>Before Configuration</h3>
+        <pre>
+&lt;T&gt;
+  &lt;k&gt;
+    n ~&gt; #freezer_+__IMP-SYNTAX_AExp_AExp_AExp0_ ( 120 ~&gt; .K ) ~&gt; #freezer_=_;_IMP-SYNTAX_Stmt_Id_AExp1_ ( sum ~&gt; .K ) ~&gt; .K
+  &lt;/k&gt;
+  &lt;state&gt;
+    n |-&gt; 100
+    sum |-&gt; 0
+    x |-&gt; 100
+  &lt;/state&gt;
+&lt;/T&gt;
+        </pre>
+
+        <h3>Rewrite Rule</h3>
+        <h4>lookup</h4>
+        <pre>
+&lt;k&gt; X:Id =&gt; I ...&lt;/k&gt;
+               &lt;state&gt;... X |-&gt; I ...&lt;/state&gt;
+
+        </pre>
+        <h3>After Configuration</h3>
+        <pre>
+&lt;T&gt;
+  &lt;k&gt;
+    100 ~&gt; #freezer_+__IMP-SYNTAX_AExp_AExp_AExp0_ ( 120 ~&gt; .K ) ~&gt; #freezer_=_;_IMP-SYNTAX_Stmt_Id_AExp1_ ( sum ~&gt; .K ) ~&gt; .K
+  &lt;/k&gt;
+  &lt;state&gt;
+    n |-&gt; 100
+    sum |-&gt; 0
+    x |-&gt; 100
+  &lt;/state&gt;
+&lt;/T&gt;
+        </pre>
+    </div>
+    <div class="slide ">
+        <h2>Depth 16</h2>
+        <h3>Before Configuration</h3>
+        <pre>
+&lt;T&gt;
+  &lt;k&gt;
+    sum = 220 ~&gt; .K
+  &lt;/k&gt;
+  &lt;state&gt;
+    n |-&gt; 100
+    sum |-&gt; 0
+    x |-&gt; 100
+  &lt;/state&gt;
+&lt;/T&gt;
+        </pre>
+
+        <h3>Rewrite Rule</h3>
+        <h4>assign</h4>
+        <pre>
+&lt;k&gt; X = I:Int; =&gt; .K ...&lt;/k&gt; &lt;state&gt;... X |-&gt; (_ =&gt; I) ...&lt;/state&gt;
+
+        </pre>
+        <h3>After Configuration</h3>
+        <pre>
+&lt;T&gt;
+  &lt;k&gt;
+    .K
+  &lt;/k&gt;
+  &lt;state&gt;
+    n |-&gt; 100
+    sum |-&gt; 220
+    x |-&gt; 100
+  &lt;/state&gt;
+&lt;/T&gt;
+        </pre>
+    </div>
+<script>
+    let currentSlide = 0;
+    const slides = document.querySelectorAll('.slide');
+
+    function showSlide(index) {
+        slides.forEach((slide, i) => {
+            slide.classList.remove('active');
+            if (i === index) {
+                slide.classList.add('active');
+            }
+        });
+    }
+
+    function changeSlide(direction) {
+        currentSlide = (currentSlide + direction + slides.length) % slides.length;
+        showSlide(currentSlide);
+    }
+
+    // 初回スライド表示
+    showSlide(currentSlide);
+</script>
+
+</body>
+</html>
