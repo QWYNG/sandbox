@@ -103,7 +103,6 @@ def generate_html(results)
             }
             .slideshow-container {
                 width: 60%;
-                background-color: #f8f8f8;
                 padding: 20px;
                 border: 1px solid #ddd;
                 box-shadow: 0px 0px 10px rgba(0, 0, 0, 0.1);
@@ -131,7 +130,6 @@ def generate_html(results)
                 user-select: none;
             }
             pre {
-                background-color: #f8f8f8;
                 padding: 10px;
                 border: 1px solid #ddd;
                 overflow-x: auto;
