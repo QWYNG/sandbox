@@ -1,3 +1,5 @@
+# ruby script.rb <script_file> <semantics_file> <modul>
+
 require 'open3'
 require 'strings-ansi'
 require 'cgi'
@@ -186,7 +188,6 @@ def generate_html(results)
             showSlide(currentSlide);
         }
 
-        // 初回スライド表示
         showSlide(currentSlide);
     </script>
 
