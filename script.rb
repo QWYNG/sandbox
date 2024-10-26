@@ -1,4 +1,5 @@
 # ruby script.rb <script_file> <semantics_file> <modul>
+# e.g. ruby script.rb k/sum.imp k/imp.md IMP
 
 require 'open3'
 require 'strings-ansi'
@@ -27,7 +28,23 @@ def match?(string)
   string.include?('Match succeeds')
 end
 
-Result = Struct.new(:rule, :depth, :before_configration, :after_configration)
+def get_rules(file)
+  rules = []
+  text = File.read(file)
+  pattern = %r{rule\s\[(\w+)\]:\s*((?:<\w+>[\s\S]*?</\w+>\s*)+)(?:\s*requires[\s\S]*?)?}
+
+  text.scan(pattern).each do |match|
+    match.compact!
+    rule = Rule.new
+    rule.label = match[0]
+    rule.rewrite_rule = match[1]
+    rules << rule
+  end
+
+  rules
+end
+
+Rule = Struct.new(:label, :rewrite_rule)
 
 def run_k(opt, modul:, rules:)
   results = []
@@ -66,22 +83,7 @@ def run_k(opt, modul:, rules:)
   results
 end
 
-Rule = Struct.new(:label, :rewrite_rule)
-def get_rules(file)
-  rules = []
-  text = File.read(file)
-  pattern = %r{rule\s\[(\w+)\]:\s*((?:<\w+>[\s\S]*?</\w+>\s*)+)(?:\s*requires[\s\S]*?)?}
-
-  text.scan(pattern).each do |match|
-    match.compact!
-    rule = Rule.new
-    rule.label = match[0]
-    rule.rewrite_rule = match[1]
-    rules << rule
-  end
-
-  rules
-end
+Result = Struct.new(:rule, :depth, :before_configration, :after_configration)
 
 def generate_html(results)
   html = <<~HTML
