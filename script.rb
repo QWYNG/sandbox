@@ -242,8 +242,8 @@ end
 
 script_file, semantics_file, modul = ARGV
 opts = OptionParser.new
-Option = {:out => :tui}
-opts.on("-o") do |v|
+Option = {:out => 'tui'}
+opts.on("-o FORMAT") do |v|
   Option[:out] = v
 end
 opts.parse!(ARGV)
@@ -253,8 +253,10 @@ results = run_k("#{script_file} --debugger", modul: modul, rules: get_rules(sema
 Thread.kill(animation_thread)
 puts "\rGeneration complete!"
 
-if Option[:out] == :html
-  File.write('slideshow.html', generate_html(results))
+if Option[:out] == 'html'
+  filename = 'slideshow.html'
+  File.write(filename, generate_html(results))
+  puts "#{filename} generated"
 else
   Curses.init_screen
   begin
