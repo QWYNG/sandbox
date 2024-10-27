@@ -96,6 +96,90 @@
         </pre>
     </div>
     <div class="slide ">
+        <h2>Depth 1</h2>
+        <h3>Before Configuration</h3>
+        <pre>
+&lt;T&gt;
+  &lt;k&gt;
+    int sum, x, .Ids
+    x = 100
+    n = 100
+    sum = 0
+    sum = n + 120 ~&gt; .K
+  &lt;/k&gt;
+  &lt;state&gt;
+    n |-&gt; 0
+  &lt;/state&gt;
+&lt;/T&gt;
+        </pre>
+
+        <h3>Rewrite Rule</h3>
+        <h4>declare</h4>
+        <pre>
+&lt;k&gt; int (X,Xs =&gt; Xs);_ &lt;/k&gt; &lt;state&gt; Rho:Map (.Map =&gt; X|-&gt;0) &lt;/state&gt;
+    
+        </pre>
+        <h3>After Configuration</h3>
+        <pre>
+&lt;T&gt;
+  &lt;k&gt;
+    int x, .Ids
+    x = 100
+    n = 100
+    sum = 0
+    sum = n + 120 ~&gt; .K
+  &lt;/k&gt;
+  &lt;state&gt;
+    n |-&gt; 0
+    sum |-&gt; 0
+  &lt;/state&gt;
+&lt;/T&gt;
+        </pre>
+    </div>
+    <div class="slide ">
+        <h2>Depth 2</h2>
+        <h3>Before Configuration</h3>
+        <pre>
+&lt;T&gt;
+  &lt;k&gt;
+    int x, .Ids
+    x = 100
+    n = 100
+    sum = 0
+    sum = n + 120 ~&gt; .K
+  &lt;/k&gt;
+  &lt;state&gt;
+    n |-&gt; 0
+    sum |-&gt; 0
+  &lt;/state&gt;
+&lt;/T&gt;
+        </pre>
+
+        <h3>Rewrite Rule</h3>
+        <h4>declare</h4>
+        <pre>
+&lt;k&gt; int (X,Xs =&gt; Xs);_ &lt;/k&gt; &lt;state&gt; Rho:Map (.Map =&gt; X|-&gt;0) &lt;/state&gt;
+    
+        </pre>
+        <h3>After Configuration</h3>
+        <pre>
+&lt;T&gt;
+  &lt;k&gt;
+    int .Ids
+    x = 100
+    n = 100
+    sum = 0
+    sum = n + 120 ~&gt; .K
+  &lt;/k&gt;
+  &lt;state&gt;
+    n |-&gt; 0
+    sum |-&gt; 0
+    x |-&gt; 0
+  &lt;/state&gt;
+&lt;/T&gt;
+        </pre>
+    </div>
+    <div class="slide ">
         <h2>Depth 7</h2>
         <h3>Before Configuration</h3>
         <pre>

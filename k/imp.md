@@ -218,7 +218,7 @@ case we initialize the variable to 0 in the state, but only when the variable is
 not already declared (all variables are global and distinct in IMP).
 
 ```k
-  rule <k> int (X,Xs => Xs);_ </k> <state> Rho:Map (.Map => X|->0) </state>
+  rule [declare]: <k> int (X,Xs => Xs);_ </k> <state> Rho:Map (.Map => X|->0) </state>
     requires notBool (X in keys(Rho))
   rule int .Ids; S => S
 endmodule

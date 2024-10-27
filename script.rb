@@ -4,6 +4,8 @@
 require 'open3'
 require 'strings-ansi'
 require 'cgi'
+require "optparse"
+require 'curses'
 
 def wait_for_prompt(stdout)
   buffer = ''
@@ -51,7 +53,6 @@ def run_k(opt, modul:, rules:)
 
   Open3.popen3("krun #{opt}") do |stdin, stdout, _stderr, wait_thr|
     pid = wait_thr.pid
-    puts "pid: #{pid}"
     wait_for_prompt(stdout)
     first_out = run_gdb_command('k start', stdin, stdout)
 
@@ -198,6 +199,84 @@ def generate_html(results)
   html
 end
 
+def display_slide(win, result)
+  win.clear
+  row = 1
+  win.setpos(row += 1, 2)
+  win.addstr("Depth - #{result.depth}")
+  win.setpos(row += 1, 2)
+  win.addstr("Before Configuration:")
+  Strings::ANSI.sanitize(result.before_configration.to_s).each_line do |line|
+    win.setpos(row += 1, 4)
+    win.addstr(line)
+  end
+  win.setpos(row += 2, 2)
+  win.addstr("Rewrite Rule: #{result.rule&.label}")
+  Strings::ANSI.sanitize(result.rule&.rewrite_rule.to_s).each_line do |line|
+    win.setpos(row += 1, 4)
+    win.addstr(line)
+  end
+  win.setpos(row += 1, 4)
+  win.setpos(row += 1, 2)
+  win.addstr("After Configuration:")
+  Strings::ANSI.sanitize(result.after_configration.to_s).each_line do |line|
+    win.setpos(row += 1, 4)
+    win.addstr(line)
+  end
+  win.setpos(row += 1, 2)
+  win.addstr("<-- Use a/d keys to navigate, 'q' to quit -->")
+  win.refresh
+end
+
+def start_generating_animation
+  Thread.new do
+    loop do
+      ["generating", "generating.", "generating..", "generating..."].each do |text|
+        print "\r#{text.ljust(15)}"
+        STDOUT.flush
+        sleep(0.5)
+      end
+    end
+  end
+end
+
 script_file, semantics_file, modul = ARGV
+opts = OptionParser.new
+Option = {:out => :tui}
+opts.on("-o") do |v|
+  Option[:out] = v
+end
+opts.parse!(ARGV)
+
+animation_thread = start_generating_animation
 results = run_k("#{script_file} --debugger", modul: modul, rules: get_rules(semantics_file))
-File.write('slideshow.html', generate_html(results))
+Thread.kill(animation_thread)
+puts "\rGeneration complete!"
+
+if Option[:out] == :html
+  File.write('slideshow.html', generate_html(results))
+else
+  Curses.init_screen
+  begin
+    Curses.curs_set(0)
+    win = Curses.stdscr
+    result_index = 0
+  
+    display_slide(win, results[result_index])
+  
+    loop do
+      case win.getch
+      when 'd'
+        result_index += 1 if result_index < results.size - 1
+      when 'a'
+        result_index -= 1 if result_index > 0
+      when 'q'
+        break
+      end
+      display_slide(win, results[result_index])
+    end
+  ensure
+    Curses.close_screen
+  end
+end
+
