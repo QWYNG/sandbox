@@ -6,6 +6,7 @@ require 'strings-ansi'
 require 'cgi'
 require "optparse"
 require 'curses'
+require_relative 'rule'
 
 def wait_for_prompt(stdout)
   buffer = ''
@@ -30,24 +31,6 @@ def match?(string)
   string.include?('Match succeeds')
 end
 
-def get_rules(file)
-  rules = []
-  text = File.read(file)
-  pattern = %r{rule\s\[(\w+)\]:\s*((?:<\w+>[\s\S]*?</\w+>\s*)+)(?:\s*requires[\s\S]*?)?}
-
-  text.scan(pattern).each do |match|
-    match.compact!
-    rule = Rule.new
-    rule.label = match[0]
-    rule.rewrite_rule = match[1]
-    rules << rule
-  end
-
-  rules
-end
-
-Rule = Struct.new(:label, :rewrite_rule)
-
 def run_k(opt, modul:, rules:)
   results = []
 
@@ -59,7 +42,11 @@ def run_k(opt, modul:, rules:)
     exited = false
     depth = 0
 
-    results << Result.new(Rule.new('Initial Configuration', ''), depth, extract_configration(first_out))
+    results << Result.new(Rule.new(label: 'Initial Configuration', rewrite_rule: ''), depth, extract_configration(first_out))
+    rules.each do |rule|
+      match_out = run_gdb_command("k match #{modul}.#{rule.label} subject", stdin, stdout)
+      results << Result.new(rule, depth, extract_configration(first_out)) if match?(match_out)
+    end
 
     until exited
       depth += 1
@@ -249,7 +236,7 @@ end
 opts.parse!(ARGV)
 
 animation_thread = start_generating_animation
-results = run_k("#{script_file} --debugger", modul: modul, rules: get_rules(semantics_file))
+results = run_k("#{script_file} --debugger", modul: modul, rules: Rule.get_rules(semantics_file))
 Thread.kill(animation_thread)
 puts "\rGeneration complete!"
 

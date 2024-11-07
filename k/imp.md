@@ -44,7 +44,7 @@ syntax Block ::= "{" "}"
 syntax Stmt  ::= Block
                | Id "=" AExp ";"            [strict(2), color(pink), format(%1 %2 %3%4)]
                | "if" "(" BExp ")"
-                 Block "else" Block         [strict(1), colors(yellow, white, white, yellow), format(%1 %2%3%4 %5 %6 %7)]
+                 Block "else" Block         [strict(1)]
                | "while" "(" BExp ")" Block [colors(yellow,white,white), format(%1 %2%3%4 %5)]
                > Stmt Stmt                  [left, format(%1%n%2)]
 ```
@@ -132,9 +132,9 @@ abstraction mechanism is at work here! That means that the rewrites in the rules
 below all happen at the beginning of the `k` cell.
 
 ```k
-rule I1 / I2 => I1 /Int I2  requires I2 =/=Int 0
-rule I1 + I2 => I1 +Int I2
-rule - I1 => 0 -Int I1
+rule [divide]: I1 / I2 => I1 /Int I2  requires I2 =/=Int 0
+rule [sum]: I1 + I2 => I1 +Int I2
+rule [negative]: - I1 => 0 -Int I1
 ```
 
 ### Boolean expressions
@@ -144,10 +144,10 @@ this is the reason we annotated the syntax of `&&` with the **K** attribute
 `strict(1)` instead of `strict`.
 
 ```k
-rule I1 < I2 => I1 <Int I2
-rule ! T => notBool T
-rule true && B => B
-rule false && _ => false
+rule [smaller]: I1 < I2 => I1 <Int I2
+rule [notbool]: ! T => notBool T
+rule [and]: true && B => B
+rule [andFalse]: false && _ => false
 ```
 
 ### Blocks and Statements
@@ -164,8 +164,8 @@ effectively giving them a bracket semantics; we can afford to do this only
 because we have no block-local variable declarations yet in IMP.
 
 ```k
-rule {} => .K
-rule {S} => S
+rule [empty]: {} => .K
+rule [block]: {S} => S
 ```
 
 ### Assignment
@@ -195,8 +195,8 @@ annotated with the attribute `strict(1)` in the syntax module above, so only its
 first argument is allowed to be evaluated.
 
 ```k
-rule if (true)  S else _ => S
-rule if (false) _ else S => S
+rule [ifTrue]: if (true)  S else _ => S
+rule [ifFalse]: if (false) _ else S => S
 ```
 
 ### While loop
