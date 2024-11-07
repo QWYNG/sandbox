@@ -31,7 +31,7 @@ def match?(string)
   string.include?('Match succeeds')
 end
 
-def run_k(opt, modul:, rules:)
+def run_k(opt, rules:)
   results = []
 
   Open3.popen3("krun #{opt}") do |stdin, stdout, _stderr, wait_thr|
@@ -44,7 +44,7 @@ def run_k(opt, modul:, rules:)
 
     results << Result.new(Rule.new(label: 'Initial Configuration', rewrite_rule: ''), depth, extract_configration(first_out))
     rules.each do |rule|
-      match_out = run_gdb_command("k match #{modul}.#{rule.label} subject", stdin, stdout)
+      match_out = run_gdb_command("k match #{rule.label} subject", stdin, stdout)
       results << Result.new(rule, depth, extract_configration(first_out)) if match?(match_out)
     end
 
@@ -57,7 +57,7 @@ def run_k(opt, modul:, rules:)
       end
 
       rules.each do |rule|
-        match_out = run_gdb_command("k match #{modul}.#{rule.label} subject", stdin, stdout)
+        match_out = run_gdb_command("k match #{rule.label} subject", stdin, stdout)
         results << Result.new(rule, depth, extract_configration(step_out)) if match?(match_out)
       end
 
@@ -215,19 +215,7 @@ def display_slide(win, result)
   win.refresh
 end
 
-def start_generating_animation
-  Thread.new do
-    loop do
-      ["generating", "generating.", "generating..", "generating..."].each do |text|
-        print "\r#{text.ljust(15)}"
-        STDOUT.flush
-        sleep(0.5)
-      end
-    end
-  end
-end
-
-script_file, semantics_file, modul = ARGV
+script_file, semantics_file = ARGV
 opts = OptionParser.new
 Option = {:out => 'tui'}
 opts.on("-o FORMAT") do |v|
@@ -235,9 +223,8 @@ opts.on("-o FORMAT") do |v|
 end
 opts.parse!(ARGV)
 
-animation_thread = start_generating_animation
-results = run_k("#{script_file} --debugger", modul: modul, rules: Rule.get_rules(semantics_file))
-Thread.kill(animation_thread)
+results = run_k("#{script_file} --debugger", rules: Rule.get_rules(semantics_file, './imp-kompiled/'))
+
 puts "\rGeneration complete!"
 
 if Option[:out] == 'html'

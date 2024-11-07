@@ -1,16 +1,28 @@
 class Rule
-  def self.get_rules(file)
+  def self.get_rules(file, kompiled_dir)
+    parsed_txt = File.join(kompiled_dir, 'parsed.txt')
+    semantics_txt = File.read(file).each_line.to_a
+
     rules = []
-    text = File.read(file)
-    pattern = %r{rule\s\[(?<label>\w+)\]:\s(?<rule>[\s\S]*?)(?=\s*requires|$)}
-  
-    text.scan(pattern).each do |match|
-      match.compact!
-      rule = Rule.new(label: match[0], rewrite_rule: match[1])
-    
-      rules << rule
+
+    File.read(parsed_txt).each_line do |line|
+      if line.include?('rule') && line.include?('label')
+        source_content = line.match(/Source\(([^)]+)\)/)[1]
+        next if source_content.include?('builtin')
+        start_line, start_column, end_line, end_column = line.match(/Location\((\d+),(\d+),(\d+),(\d+)\)/).captures.map { |x| x.to_i - 1 }
+        label = line.match(/label\(([^)]+)\)/).captures.first
+
+        rewrite_rule = if start_line == end_line
+          semantics_txt[start_line][start_column..end_column]
+        else
+          semantics_txt[(start_line)..(end_line - 1)].join +
+          semantics_txt[end_line][..end_column]
+        end.strip
+
+        rules << Rule.new(label: label, rewrite_rule: rewrite_rule)
+      end
     end
-  
+
     rules
   end
   
