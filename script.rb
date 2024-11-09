@@ -188,29 +188,28 @@ end
 
 def display_slide(win, result)
   win.clear
-  row = 1
-  win.setpos(row += 1, 2)
+  row = 0
+  win.setpos(row, 0)
   win.addstr("Depth - #{result.depth}")
-  win.setpos(row += 1, 2)
+  win.setpos(row += 1, 0)
   win.addstr("Before Configuration:")
   Strings::ANSI.sanitize(result.before_configration.to_s).each_line do |line|
-    win.setpos(row += 1, 4)
+    win.setpos(row += 1, 2)
     win.addstr(line)
   end
-  win.setpos(row += 2, 2)
+  win.setpos(row += 2, 0)
   win.addstr("Rewrite Rule: #{result.rule&.label}")
-  Strings::ANSI.sanitize(result.rule&.rewrite_rule.to_s).each_line do |line|
-    win.setpos(row += 1, 4)
+  result.rule&.rewrite_rule.each_line do |line|
+    win.setpos(row += 1, 2)
     win.addstr(line)
   end
-  win.setpos(row += 1, 4)
-  win.setpos(row += 1, 2)
+  win.setpos(row += 2, 0)
   win.addstr("After Configuration:")
   Strings::ANSI.sanitize(result.after_configration.to_s).each_line do |line|
-    win.setpos(row += 1, 4)
+    win.setpos(row += 1, 2)
     win.addstr(line)
   end
-  win.setpos(row += 1, 2)
+  win.setpos(row += 2, 0)
   win.addstr("<-- Use a/d keys to navigate, 'q' to quit -->")
   win.refresh
 end
