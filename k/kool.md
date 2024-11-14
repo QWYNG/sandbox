@@ -527,7 +527,7 @@ rule [extends]: <k> class Class1 extends Class2 { S } => .K ...</k>
 ```
 
 ```k
-  rule I1 + I2 => I1 +Int I2
+  rule [sum]: I1 + I2 => I1 +Int I2
   rule Str1 + Str2 => Str1 +String Str2
   rule I1 - I2 => I1 -Int I2
   rule I1 * I2 => I1 *Int I2

@@ -222,7 +222,7 @@ opts.on("-o FORMAT") do |v|
 end
 opts.parse!(ARGV)
 
-results = run_k("#{script_file} --debugger", rules: Rule.get_rules(semantics_file, './imp-kompiled/'))
+results = run_k("#{script_file} --debugger", rules: Rule.get_rules(semantics_file, './kool-kompiled/'))
 
 puts "\rGeneration complete!"
 
