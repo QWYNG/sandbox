@@ -4,9 +4,10 @@
 require 'open3'
 require 'strings-ansi'
 require 'cgi'
-require "optparse"
+require 'optparse'
 require 'curses'
 require_relative 'rule'
+require_relative 'configration_parser'
 
 def wait_for_prompt(stdout)
   buffer = ''
@@ -35,14 +36,15 @@ def run_k(opt, rules:)
   results = []
 
   Open3.popen3("krun #{opt}") do |stdin, stdout, _stderr, wait_thr|
-    pid = wait_thr.pid
+    wait_thr.pid
     wait_for_prompt(stdout)
     first_out = run_gdb_command('k start', stdin, stdout)
 
     exited = false
     depth = 0
 
-    results << Result.new(Rule.new(label: 'Initial Configuration', rewrite_rule: ''), depth, extract_configration(first_out))
+    results << Result.new(Rule.new(label: 'Initial Configuration', rewrite_rule: ''), depth,
+                          extract_configration(first_out))
     rules.each do |rule|
       match_out = run_gdb_command("k match #{rule.label} subject", stdin, stdout)
       results << Result.new(rule, depth, extract_configration(first_out)) if match?(match_out)
@@ -73,138 +75,25 @@ end
 
 Result = Struct.new(:rule, :depth, :before_configration, :after_configration)
 
-def generate_html(results)
-  html = <<~HTML
-    <!DOCTYPE html>
-    <html lang="ja">
-    <head>
-        <meta name="viewport" content="width=device-width, initial-scale=1.0">
-        <title>Configuration Slideshow</title>
-        <style>
-            body {
-                font-family: Arial, sans-serif;
-                display: flex;
-                justify-content: center;
-                align-items: center;
-                height: 100%;
-                margin: 0;
-            }
-            .slideshow-container {
-                width: 60%;
-                padding: 20px;
-                border: 1px solid #ddd;
-                box-shadow: 0px 0px 10px rgba(0, 0, 0, 0.1);
-                position: relative;
-            }
-            .slide {
-                display: none;
-            }
-            .active {
-                display: block;
-            }
-            .navigation {
-                position: absolute;
-                top: 100%;
-                width: 100%;
-                display: flex;
-                justify-content: space-between;
-                transform: translateY(-50%);
-            }
-            .prev, .next {
-                background-color: #333;
-                color: white;
-                padding: 10px;
-                cursor: pointer;
-                user-select: none;
-            }
-            pre {
-                padding: 10px;
-                border: 1px solid #ddd;
-                overflow-x: auto;
-            }
-        </style>
-    </head>
-    <body>
-
-    <div class="slideshow-container">
-
-      <div class="navigation">
-        <span class="prev" onclick="changeSlide(-1)">&#10094; Prev</span>
-        <span class="next" onclick="changeSlide(1)">Next &#10095;</span>
-      </div>
-
-  HTML
-
-  results.each_with_index do |result, index|
-    html += <<~HTML
-          <div class="slide #{'active' if index.zero?}">
-              <h2>Depth #{result.depth}</h2>
-              <h3>Before Configuration</h3>
-              <pre>
-      #{CGI.escapeHTML(Strings::ANSI.sanitize(result.before_configration.to_s))}
-              </pre>
-
-              <h3>Rewrite Rule</h3>
-              <h4>#{result.rule.label}</h4>
-              <pre>
-      #{CGI.escapeHTML(result.rule.rewrite_rule.to_s)}
-              </pre>
-              <h3>After Configuration</h3>
-              <pre>
-      #{CGI.escapeHTML(Strings::ANSI.sanitize(result.after_configration.to_s))}
-              </pre>
-          </div>
-    HTML
-  end
-
-  html += <<~HTML
-    <script>
-        let currentSlide = 0;
-        const slides = document.querySelectorAll('.slide');
-
-        function showSlide(index) {
-            slides.forEach((slide, i) => {
-                slide.classList.remove('active');
-                if (i === index) {
-                    slide.classList.add('active');
-                }
-            });
-        }
-
-        function changeSlide(direction) {
-            currentSlide = (currentSlide + direction + slides.length) % slides.length;
-            showSlide(currentSlide);
-        }
-
-        showSlide(currentSlide);
-    </script>
-
-    </body>
-    </html>
-  HTML
-
-  html
-end
-
 def display_slide(win, result)
   win.clear
   row = 0
   win.setpos(row, 0)
   win.addstr("Depth - #{result.depth}")
   win.setpos(row += 1, 0)
-  win.addstr("Before Configuration:")
+  win.addstr('Before Configuration:')
   Strings::ANSI.sanitize(result.before_configration.to_s).each_line do |line|
     win.setpos(row += 1, 2)
     win.addstr(line)
   end
   win.setpos(row += 2, 0)
   win.addstr("Rewrite Rule: #{result.rule&.label}")
-  result.rule&.rewrite_rule.each_line do |line|
+  result.rule&.rewrite_rule&.each_line do |line|
     win.setpos(row += 1, 2)
     win.addstr(line)
   end
   win.setpos(row += 2, 0)
-  win.addstr("After Configuration:")
+  win.addstr('After Configuration:')
   Strings::ANSI.sanitize(result.after_configration.to_s).each_line do |line|
     win.setpos(row += 1, 2)
     win.addstr(line)
@@ -214,21 +103,34 @@ def display_slide(win, result)
   win.refresh
 end
 
+def generate_svg(results)
+  init_result = results.shift
+
+  init_configuration = InitConfiguration.new(Strings::ANSI.sanitize(init_result.before_configration.to_s))
+
+  results.each do |result|
+    before_config = Configuration.new(Strings::ANSI.sanitize(result.before_configration.to_s), init_configuration)
+    PrintConfiguration.new(before_config).print("output#{result.depth}_before")
+    after_config = Configuration.new(Strings::ANSI.sanitize(result.after_configration.to_s), init_configuration)
+    PrintConfiguration.new(after_config).print("output#{result.depth}_after")
+  end
+end
+
 script_file, semantics_file = ARGV
 opts = OptionParser.new
-Option = {:out => 'tui'}
-opts.on("-o FORMAT") do |v|
+Option = { out: 'tui' }
+opts.on('-o FORMAT') do |v|
   Option[:out] = v
 end
 opts.parse!(ARGV)
 
-results = run_k("#{script_file} --debugger", rules: Rule.get_rules(semantics_file, './kool-kompiled/'))
+results = run_k("#{script_file} --debugger", rules: Rule.get_rules(semantics_file, './imp-kompiled/'))
 
 puts "\rGeneration complete!"
 
-if Option[:out] == 'html'
-  filename = 'slideshow.html'
-  File.write(filename, generate_html(results))
+if Option[:out] == 'svg'
+  filename = 'output'
+  generate_svg(results)
   puts "#{filename} generated"
 else
   Curses.init_screen
@@ -236,15 +138,15 @@ else
     Curses.curs_set(0)
     win = Curses.stdscr
     result_index = 0
-  
+
     display_slide(win, results[result_index])
-  
+
     loop do
       case win.getch
       when 'd'
         result_index += 1 if result_index < results.size - 1
       when 'a'
-        result_index -= 1 if result_index > 0
+        result_index -= 1 if result_index.positive?
       when 'q'
         break
       end
@@ -254,4 +156,3 @@ else
     Curses.close_screen
   end
 end
-

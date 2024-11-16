@@ -1,0 +1,21 @@
+<svg width="100000px" height="100000px" xmlns="http://www.w3.org/2000/svg">
+
+<rect x="1" y="1" width="400" height="100" fill="lightgray" stroke="black"/>
+<text x="101" y="51" text-anchor="middle" font-size="30">
+k
+</text>
+<text x="101" y="76" text-anchor="middle" font-size="20">
+
+    int .Ids
+    x = 100 ~&gt; .K
+  
+</text>
+<rect x="1" y="101" width="400" height="150" fill="lightgray" stroke="black"/>
+<text x="101" y="126" text-anchor="middle" font-size="30">
+state
+</text>
+<rect x="11" y="151" width="180" height="40" fill="lightgreen" stroke="black"/>
+<text x="101" y="176" text-anchor="middle" font-size="20">
+x -&gt; 0
+</text>
+</svg>
