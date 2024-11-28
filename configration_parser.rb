@@ -8,15 +8,15 @@ require 'victor'
 
 
 class StackDiagram
-  def initialize(name, stack)
+  def initialize(name, stack_string)
     @name = name
-    @stack = stack
+    @stack = stack_string.strip.split("\n").map(&:strip)
   end
 
   def generate_svg(x, y)
     svg = Victor::SVG.new
     svg.rect(x: x, y: y, width: 400, height: 50 * @stack.size + 100, fill: 'lightgray', stroke: 'black')
-    svg.text(@name, x: x + 100, y: y + 25, 'text-anchor' => 'middle', 'font-size' => 30)
+    svg.text(@name, x: x + 100, y: y + 25, 'text-anchor' => 'middle')
 
     @stack.each_with_index do |element, index|
       y_position = y + (index) * 50 + 50
@@ -45,7 +45,7 @@ class MapDiagram
   def generate_svg(x, y)
     svg = Victor::SVG.new
     svg.rect(x: x, y: y, width: 400, height: 50 * @map.size + 100, fill: 'lightgray', stroke: 'black')
-    svg.text(@name, x: x + 100, y: y + 25, 'text-anchor' => 'middle', 'font-size' => 30)
+    svg.text(@name, x: x + 100, y: y + 25, 'text-anchor' => 'middle')
 
     @map.each_with_index do |(key, value), index|
       y_position = y + (index) * 50 + 50
@@ -75,7 +75,7 @@ class NamespaceDiagram
   def generate_svg(x, y)
     svg = Victor::SVG.new
     svg.rect(x:, y:, width: 500, height: 400 * @children_count + 50, fill: 'lightgray', stroke: 'black')
-    svg.text(@name, x: x + 100, y: y + 50, 'text-anchor' => 'middle', 'font-size' => 30)
+    svg.text(@name, x: x + 100, y: y + 50, 'text-anchor' => 'middle')
 
     svg
   end
@@ -90,8 +90,8 @@ class StringDiagram
   def generate_svg(x, y)
     svg = Victor::SVG.new
     svg.rect(x: x, y: y, width: 400, height: 100, fill: 'lightgray', stroke: 'black')
-    svg.text(@name, x: x + 100, y: y + 50, 'text-anchor' => 'middle', 'font-size' => 30)
-    svg.text(@value, x: x + 100, y: y + 75, 'text-anchor' => 'middle', 'font-size' => 20)
+    svg.text(@name, x: x + 100, y: y + 50, 'text-anchor' => 'middle')
+    svg.text(@value, x: x + 20, y: y + 75, 'font-size' => 20)
 
     svg
   end
@@ -131,6 +131,21 @@ class Diagram
     @svg.append(string_svg)
     @current_x += 0
     @current_y += 100
+  end
+  
+
+  def add_related_rule(rule)
+    @svg.rect(x: @current_x, y: @current_y, width: 400 + rule.rewrite_rule.size * 4, height: 50 * rule.rewrite_rule.lines.size, fill: 'lightgray', stroke: 'black')
+    @svg.text("Rewrite rule: #{rule.label}", x: @current_x + 20, y: @current_y + 20)
+    @svg.foreignObject(x: @current_x + 10, y: @current_y + 40, width: 400 + rule.rewrite_rule.size * 8, height: 50) do
+      @svg.html(xmlns: "http://www.w3.org/1999/xhtml") do
+        rule.rewrite_rule.each_line do |line|
+          @svg.h3(line)
+        end
+      end
+   end
+
+    @current_y += 50 * rule.rewrite_rule.lines.size
   end
 
   def save(file_name = "combined_diagram.svg")
@@ -191,14 +206,18 @@ class Configuration
 end
 
 class PrintConfiguration
-  def initialize(config)
-    @config = config
+  def initialize(result, init_configuration)
+    @result = result
+    @before_configration = Configuration.new(Strings::ANSI.sanitize(result.before_configration.to_s), init_configuration)
+    @after_configration = Configuration.new(Strings::ANSI.sanitize(result.after_configration.to_s), init_configuration)
   end
 
   def print(filename)
-    tree = @config.tree
-    diagram = Diagram.new(tree.name)
-    print_element(@config.tree, diagram, filename)
+    diagram = Diagram.new(@before_configration.tree.name)
+    print_element(@before_configration.tree, diagram, filename)
+    diagram.add_related_rule(@result.rule)
+    print_element(@after_configration.tree, diagram, filename)
+    diagram.save("#{filename}.svg")
   end
 
   def print_element(element, diagram, filename)
@@ -206,7 +225,7 @@ class PrintConfiguration
     when :map
       diagram.add_map(MapDiagram.new(element.name, element.text))
     when :list
-      diagram.add_stack(StackDiagram.new(element.name, [:a, :b, :c]))
+      diagram.add_stack(StackDiagram.new(element.name, element.text))
     when :namespace
       diagram.add_namespace(NamespaceDiagram.new(element.name, element.elements.size))
     when :string
@@ -217,10 +236,6 @@ class PrintConfiguration
 
     element.each_element do |child|
       print_element(child, diagram, filename)
-    end
-
-    if element.parent.kind_of?(REXML::Document)
-      diagram.save("#{filename}.svg")
     end
   end
 end

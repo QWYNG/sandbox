@@ -4,5 +4,8 @@ source 'https://rubygems.org'
 
 # gem "rails"
 
-gem 'rubocop', require: falsegem 'victor'
+gem 'rubocop', require: false
+gem 'victor'
+gem 'rmagick'
+gem 'ruby-lsp'
 

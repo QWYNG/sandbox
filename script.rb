@@ -8,6 +8,7 @@ require 'optparse'
 require 'curses'
 require_relative 'rule'
 require_relative 'configration_parser'
+require_relative 'svg_to_png'
 
 def wait_for_prompt(stdout)
   buffer = ''
@@ -75,84 +76,26 @@ end
 
 Result = Struct.new(:rule, :depth, :before_configration, :after_configration)
 
-def display_slide(win, result)
-  win.clear
-  row = 0
-  win.setpos(row, 0)
-  win.addstr("Depth - #{result.depth}")
-  win.setpos(row += 1, 0)
-  win.addstr('Before Configuration:')
-  Strings::ANSI.sanitize(result.before_configration.to_s).each_line do |line|
-    win.setpos(row += 1, 2)
-    win.addstr(line)
-  end
-  win.setpos(row += 2, 0)
-  win.addstr("Rewrite Rule: #{result.rule&.label}")
-  result.rule&.rewrite_rule&.each_line do |line|
-    win.setpos(row += 1, 2)
-    win.addstr(line)
-  end
-  win.setpos(row += 2, 0)
-  win.addstr('After Configuration:')
-  Strings::ANSI.sanitize(result.after_configration.to_s).each_line do |line|
-    win.setpos(row += 1, 2)
-    win.addstr(line)
-  end
-  win.setpos(row += 2, 0)
-  win.addstr("<-- Use a/d keys to navigate, 'q' to quit -->")
-  win.refresh
-end
-
 def generate_svg(results)
   init_result = results.shift
 
   init_configuration = InitConfiguration.new(Strings::ANSI.sanitize(init_result.before_configration.to_s))
 
   results.each do |result|
-    before_config = Configuration.new(Strings::ANSI.sanitize(result.before_configration.to_s), init_configuration)
-    PrintConfiguration.new(before_config).print("output#{result.depth}_before")
-    after_config = Configuration.new(Strings::ANSI.sanitize(result.after_configration.to_s), init_configuration)
-    PrintConfiguration.new(after_config).print("output#{result.depth}_after")
+    PrintConfiguration.new(result, init_configuration).print("output#{result.depth}")
   end
 end
 
 script_file, semantics_file = ARGV
-opts = OptionParser.new
-Option = { out: 'tui' }
-opts.on('-o FORMAT') do |v|
-  Option[:out] = v
-end
-opts.parse!(ARGV)
 
-results = run_k("#{script_file} --debugger", rules: Rule.get_rules(semantics_file, './imp-kompiled/'))
+require 'pathname'
+
+kompiled_name = Pathname.new(semantics_file).basename.sub_ext('').to_s
+results = run_k("#{script_file} --debugger", rules: Rule.get_rules(semantics_file, "./#{kompiled_name}-kompiled/"))
 
 puts "\rGeneration complete!"
 
-if Option[:out] == 'svg'
-  filename = 'output'
-  generate_svg(results)
-  puts "#{filename} generated"
-else
-  Curses.init_screen
-  begin
-    Curses.curs_set(0)
-    win = Curses.stdscr
-    result_index = 0
-
-    display_slide(win, results[result_index])
-
-    loop do
-      case win.getch
-      when 'd'
-        result_index += 1 if result_index < results.size - 1
-      when 'a'
-        result_index -= 1 if result_index.positive?
-      when 'q'
-        break
-      end
-      display_slide(win, results[result_index])
-    end
-  ensure
-    Curses.close_screen
-  end
-end
+filename = 'output'
+generate_svg(results)
+SvgToPng.convert("#{filename}.svg")
+puts "#{filename} generated"
