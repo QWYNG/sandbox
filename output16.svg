@@ -1,0 +1,68 @@
+<svg width="100000px" height="100000px" xmlns="http://www.w3.org/2000/svg">
+
+<rect x="1" y="1" width="490" height="100" fill="lightgray" stroke="black"/>
+<text x="101" y="51" text-anchor="middle">
+k
+</text>
+<text x="21" y="76" font-size="20">
+7 ~&gt; func |-&gt; 0 ~&gt; .Map ~&gt; .K
+</text>
+<rect x="1" y="101" width="300" height="150" fill="lightgray" stroke="black"/>
+<text x="101" y="126" text-anchor="middle">
+env
+</text>
+<rect x="11" y="151" width="180" height="40" fill="lightgreen" stroke="black"/>
+<text x="101" y="176" text-anchor="middle" font-size="20">
+f -&gt; 1
+</text>
+<rect x="1" y="251" width="1650" height="200" fill="lightgray" stroke="black"/>
+<text x="101" y="276" text-anchor="middle">
+store
+</text>
+<rect x="11" y="301" width="180" height="40" fill="lightgreen" stroke="black"/>
+<text x="101" y="326" text-anchor="middle" font-size="20">
+0 -&gt; closure ( .Map , f , f + 3 )
+</text>
+<rect x="11" y="351" width="180" height="40" fill="lightgreen" stroke="black"/>
+<text x="101" y="376" text-anchor="middle" font-size="20">
+1 -&gt; 4
+</text>
+<rect x="1" y="451" width="616" height="100" fill="lightgray" stroke="black"/>
+<text x="21" y="471">
+Rewrite rule: LAMBDA.recoverEnv
+</text>
+<foreignObject x="11" y="491" width="832" height="200">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<h3>
+&lt;k&gt; _:Val ~&gt; (Rho =&gt; .K) ...&lt;/k&gt; &lt;env&gt; _ =&gt; Rho &lt;/env&gt;
+</h3>
+</html>
+</foreignObject>
+<rect x="1" y="551" width="350" height="100" fill="lightgray" stroke="black"/>
+<text x="101" y="601" text-anchor="middle">
+k
+</text>
+<text x="21" y="626" font-size="20">
+7 ~&gt; .Map ~&gt; .K
+</text>
+<rect x="1" y="651" width="450" height="150" fill="lightgray" stroke="black"/>
+<text x="101" y="676" text-anchor="middle">
+env
+</text>
+<rect x="11" y="701" width="180" height="40" fill="lightgreen" stroke="black"/>
+<text x="101" y="726" text-anchor="middle" font-size="20">
+func -&gt; 0
+</text>
+<rect x="1" y="801" width="1650" height="200" fill="lightgray" stroke="black"/>
+<text x="101" y="826" text-anchor="middle">
+store
+</text>
+<rect x="11" y="851" width="180" height="40" fill="lightgreen" stroke="black"/>
+<text x="101" y="876" text-anchor="middle" font-size="20">
+0 -&gt; closure ( .Map , f , f + 3 )
+</text>
+<rect x="11" y="901" width="180" height="40" fill="lightgreen" stroke="black"/>
+<text x="101" y="926" text-anchor="middle" font-size="20">
+1 -&gt; 4
+</text>
+</svg>

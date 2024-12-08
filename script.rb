@@ -2,7 +2,6 @@
 # e.g. ruby script.rb k/sum.imp k/imp.md IMP
 
 require 'open3'
-require 'strings-ansi'
 require 'cgi'
 require 'optparse'
 require 'curses'
@@ -97,5 +96,4 @@ puts "\rGeneration complete!"
 
 filename = 'output'
 generate_svg(results)
-SvgToPng.convert("#{filename}.svg")
 puts "#{filename} generated"

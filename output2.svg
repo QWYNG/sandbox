@@ -1,11 +1,11 @@
 <svg width="100000px" height="100000px" xmlns="http://www.w3.org/2000/svg">
 
-<rect x="1" y="1" width="1310" height="100" fill="lightgray" stroke="black"/>
+<rect x="1" y="1" width="1230" height="100" fill="lightgray" stroke="black"/>
 <text x="101" y="51" text-anchor="middle">
 k
 </text>
 <text x="21" y="76" font-size="20">
-lambda f . ( f + 3 ) ~&gt; #freezer___LAMBDA-SYNTAX_Exp_Exp_Exp1_ ( closure ( .Map , func , func 4 ) ~&gt; .K ) ~&gt; .K
+lambda func . ( func 4 ) ~&gt; #freezer___LAMBDA-SYNTAX_Exp_Exp_Exp0_ ( lambda f . ( f + 3 ) ~&gt; .K ) ~&gt; .K
 </text>
 <rect x="1" y="101" width="400" height="150" fill="lightgray" stroke="black"/>
 <text x="101" y="126" text-anchor="middle">
@@ -38,12 +38,12 @@ rule [lambdaToClosure]: &lt;k&gt; lambda X:Id . E =&gt; closure(Rho,X,E) ...&lt;
 </h3>
 </html>
 </foreignObject>
-<rect x="1" y="551" width="1390" height="100" fill="lightgray" stroke="black"/>
+<rect x="1" y="551" width="1310" height="100" fill="lightgray" stroke="black"/>
 <text x="101" y="601" text-anchor="middle">
 k
 </text>
 <text x="21" y="626" font-size="20">
-closure ( .Map , f , f + 3 ) ~&gt; #freezer___LAMBDA-SYNTAX_Exp_Exp_Exp1_ ( closure ( .Map , func , func 4 ) ~&gt; .K ) ~&gt; .K
+closure ( .Map , func , func 4 ) ~&gt; #freezer___LAMBDA-SYNTAX_Exp_Exp_Exp0_ ( lambda f . ( f + 3 ) ~&gt; .K ) ~&gt; .K
 </text>
 <rect x="1" y="651" width="400" height="150" fill="lightgray" stroke="black"/>
 <text x="101" y="676" text-anchor="middle">

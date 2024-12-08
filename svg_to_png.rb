@@ -1,11 +1,10 @@
-require "RMagick"
+# frozen_string_literal: true
+
+require 'rmagick'
 
 class SvgToPng # rubocop:disable Style/Documentation
   def self.convert(svg_path)
-    Magick::Image.from_file(svg_path) do
-      self.format = 'SVG'
-      self.background_color = 'transparent'
-    end
-    img.write(svg_path.gsub(/svg$/, 'png'))
+    image = Magick::Image.read(svg_path) { |img| img.format = 'SVG' }.first
+    image.write(svg_path.sub('.svg', '.png')) { |img| img.format = 'PNG' }
   end
 end

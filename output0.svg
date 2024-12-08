@@ -1,54 +1,60 @@
 <svg width="100000px" height="100000px" xmlns="http://www.w3.org/2000/svg">
 
-<rect x="1" y="1" width="400" height="100" fill="lightgray" stroke="black"/>
+<rect x="1" y="1" width="710" height="100" fill="lightgray" stroke="black"/>
 <text x="101" y="51" text-anchor="middle">
 k
 </text>
 <text x="21" y="76" font-size="20">
-
-    int x, y, .Ids
-    y = x + 1 ~&gt; .K
-  
+let func = lambda f . ( f + 3 ) in ( func 4 ) ~&gt; .K
 </text>
 <rect x="1" y="101" width="400" height="150" fill="lightgray" stroke="black"/>
 <text x="101" y="126" text-anchor="middle">
-state
+env
 </text>
 <rect x="11" y="151" width="180" height="40" fill="lightgreen" stroke="black"/>
 <text x="101" y="176" text-anchor="middle" font-size="20">
 .Map
 </text>
-<rect x="1" y="251" width="888" height="100" fill="lightgray" stroke="black"/>
-<text x="21" y="271">
-Rewrite rule: IMP.declare
+<rect x="1" y="251" width="400" height="150" fill="lightgray" stroke="black"/>
+<text x="101" y="276" text-anchor="middle">
+store
 </text>
-<foreignObject x="11" y="291" width="1376" height="50">
+<rect x="11" y="301" width="180" height="40" fill="lightgreen" stroke="black"/>
+<text x="101" y="326" text-anchor="middle" font-size="20">
+.Map
+</text>
+<rect x="1" y="401" width="560" height="100" fill="lightgray" stroke="black"/>
+<text x="21" y="421">
+Rewrite rule: LAMBDA.let
+</text>
+<foreignObject x="11" y="441" width="720" height="200">
 <html xmlns="http://www.w3.org/1999/xhtml">
 <h3>
-rule [declare]: &lt;k&gt; int (X,Xs =&gt; Xs);_ &lt;/k&gt; &lt;state&gt; Rho:Map (.Map =&gt; X|-&gt;0) &lt;/state&gt;
-
-</h3>
-<h3>
-    requires notBool (X in keys(Rho))
+let X = E in E':Exp =&gt; (lambda X . E') E
 </h3>
 </html>
 </foreignObject>
-<rect x="1" y="351" width="400" height="100" fill="lightgray" stroke="black"/>
-<text x="101" y="401" text-anchor="middle">
+<rect x="1" y="501" width="750" height="100" fill="lightgray" stroke="black"/>
+<text x="101" y="551" text-anchor="middle">
 k
 </text>
-<text x="21" y="426" font-size="20">
-
-    int y, .Ids
-    y = x + 1 ~&gt; .K
-  
+<text x="21" y="576" font-size="20">
+( lambda func . ( func 4 ) ) lambda f . ( f + 3 ) ~&gt; .K
 </text>
-<rect x="1" y="451" width="400" height="150" fill="lightgray" stroke="black"/>
-<text x="101" y="476" text-anchor="middle">
-state
+<rect x="1" y="601" width="400" height="150" fill="lightgray" stroke="black"/>
+<text x="101" y="626" text-anchor="middle">
+env
 </text>
-<rect x="11" y="501" width="180" height="40" fill="lightgreen" stroke="black"/>
-<text x="101" y="526" text-anchor="middle" font-size="20">
-x -&gt; 0
+<rect x="11" y="651" width="180" height="40" fill="lightgreen" stroke="black"/>
+<text x="101" y="676" text-anchor="middle" font-size="20">
+.Map
+</text>
+<rect x="1" y="751" width="400" height="150" fill="lightgray" stroke="black"/>
+<text x="101" y="776" text-anchor="middle">
+store
+</text>
+<rect x="11" y="801" width="180" height="40" fill="lightgreen" stroke="black"/>
+<text x="101" y="826" text-anchor="middle" font-size="20">
+.Map
 </text>
 </svg>

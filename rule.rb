@@ -25,7 +25,7 @@ class Rule
                          semantics_txt[end_line][..end_column]
                      end.strip
 
-      rules << Rule.new(label: label, rewrite_rule: rewrite_rule)
+      rules << Rule.new(label:, rewrite_rule:)
     end
 
     rules

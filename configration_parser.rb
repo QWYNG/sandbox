@@ -1,11 +1,15 @@
+# frozen_string_literal: true
+
 require 'rexml/document'
-
-class REXML::Element
-  attr_accessor :sort
-end
-
+require 'strings-ansi'
 require 'victor'
+require 'nokogiri'
 
+module REXML
+  class Element
+    attr_accessor :sort
+  end
+end
 
 class StackDiagram
   def initialize(name, stack_string)
@@ -15,11 +19,11 @@ class StackDiagram
 
   def generate_svg(x, y)
     svg = Victor::SVG.new
-    svg.rect(x: x, y: y, width: 400, height: 50 * @stack.size + 100, fill: 'lightgray', stroke: 'black')
+    svg.rect(x:, y:, width: 400 + @stack.max{ |x, y| x.size <=> y.size} * 50, height: 50 * @stack.size + 100, fill: 'lightgray', stroke: 'black')
     svg.text(@name, x: x + 100, y: y + 25, 'text-anchor' => 'middle')
 
     @stack.each_with_index do |element, index|
-      y_position = y + (index) * 50 + 50
+      y_position = y + index * 50 + 50
       svg.rect(x: x + 10, y: y_position, width: 180, height: 40, fill: 'lightblue', stroke: 'black')
       svg.text(element.to_s, x: x + 100, y: y_position + 20, 'text-anchor' => 'middle', 'font-size' => 20)
     end
@@ -34,25 +38,24 @@ end
 
 class MapDiagram
   def initialize(name, map_string)
-    @name = name
-    @map = map_string.strip.split("\n").map do |line|
+    @name = CGI.unescapeHTML(name)
+    @map = CGI.unescapeHTML(map_string).strip.split("\n").map do |line|
       key, value = line.split('|->').map(&:strip)
       [key.to_sym, value.to_s]
     end.to_h
-    
   end
 
   def generate_svg(x, y)
     svg = Victor::SVG.new
-    svg.rect(x: x, y: y, width: 400, height: 50 * @map.size + 100, fill: 'lightgray', stroke: 'black')
+    svg.rect(x:, y:, width: 200 + @map.max{ |x, y| x.to_s.size <=> y.to_s.size}.join.size * 50, height: 50 * @map.size + 100, fill: 'lightgray', stroke: 'black')
     svg.text(@name, x: x + 100, y: y + 25, 'text-anchor' => 'middle')
 
     @map.each_with_index do |(key, value), index|
-      y_position = y + (index) * 50 + 50
+      y_position = y + index * 50 + 50
       svg.rect(x: x + 10, y: y_position, width: 180, height: 40, fill: 'lightgreen', stroke: 'black')
 
       if value.empty?
-        svg.text("#{key}", x: x + 100, y: y_position + 25, 'text-anchor' => 'middle', 'font-size' => 20)        
+        svg.text(key.to_s, x: x + 100, y: y_position + 25, 'text-anchor' => 'middle', 'font-size' => 20)
       else
         svg.text("#{key} -> #{value}", x: x + 100, y: y_position + 25, 'text-anchor' => 'middle', 'font-size' => 20)
       end
@@ -83,13 +86,13 @@ end
 
 class StringDiagram
   def initialize(name, value)
-    @name = name
-    @value = value
+    @name = CGI.unescapeHTML(name)
+    @value = CGI.unescapeHTML(value)
   end
 
   def generate_svg(x, y)
     svg = Victor::SVG.new
-    svg.rect(x: x, y: y, width: 400, height: 100, fill: 'lightgray', stroke: 'black')
+    svg.rect(x:, y:, width: 200 + @value.size * 10, height: 100, fill: 'lightgray', stroke: 'black')
     svg.text(@name, x: x + 100, y: y + 50, 'text-anchor' => 'middle')
     svg.text(@value, x: x + 20, y: y + 75, 'font-size' => 20)
 
@@ -132,32 +135,46 @@ class Diagram
     @current_x += 0
     @current_y += 100
   end
-  
 
   def add_related_rule(rule)
-    @svg.rect(x: @current_x, y: @current_y, width: 400 + rule.rewrite_rule.size * 4, height: 50 * rule.rewrite_rule.lines.size, fill: 'lightgray', stroke: 'black')
+    @svg.rect(x: @current_x, y: @current_y, width: 400 + rule.rewrite_rule.size * 4,
+              height: 50 * rule.rewrite_rule.lines.size + 50, fill: 'lightgray', stroke: 'black')
     @svg.text("Rewrite rule: #{rule.label}", x: @current_x + 20, y: @current_y + 20)
-    @svg.foreignObject(x: @current_x + 10, y: @current_y + 40, width: 400 + rule.rewrite_rule.size * 8, height: 50) do
-      @svg.html(xmlns: "http://www.w3.org/1999/xhtml") do
+    @svg.foreignObject(x: @current_x + 10, y: @current_y + 40, width: 400 + rule.rewrite_rule.size * 8, height: 200) do
+      @svg.html(xmlns: 'http://www.w3.org/1999/xhtml') do
         rule.rewrite_rule.each_line do |line|
           @svg.h3(line)
         end
       end
-   end
+    end
 
-    @current_y += 50 * rule.rewrite_rule.lines.size
+    @current_y += 50 * rule.rewrite_rule.lines.size + 50
   end
 
-  def save(file_name = "combined_diagram.svg")
+  def save(file_name = 'combined_diagram.svg')
     @svg.save(file_name)
   end
 end
-
 
 class InitConfiguration
   attr_accessor :tree
 
   def initialize(xml_str)
+    escaped_xml_string = xml_str.gsub(/<k>(.*?)<\/k>/m) do |match|
+      inner_text = $1.strip # <k>と</k>の間のテキスト
+      escaped_text = CGI.escapeHTML(inner_text) # エスケープ処理
+      "<k>#{escaped_text}</k>"
+    end
+    
+    doc = Nokogiri::XML(escaped_xml_string)
+
+    # タグ以外の内容をエスケープ
+    doc.traverse do |node|
+      node.content = CGI.escapeHTML(node.content.strip) if node.text?
+    end
+
+    xml_str = doc.to_s
+
     @tree = REXML::Document.new(xml_str).root
 
     @tree.each_element do |element|
@@ -169,17 +186,17 @@ class InitConfiguration
     element.each_element do |child|
       parse_element(child)
     end
-    
-    case element.text.strip
-    in '.Map'
-      element.sort = :map
-    in '.List'
-      element.sort = :list
-    in ''
-      element.sort = :namespace
-    else
-      element.sort = :string
-    end
+
+    element.sort = case element.text.strip
+                   in '.Map'
+                     :map
+                   in '.List'
+                     :list
+                   in ''
+                     :namespace
+                   else
+                     :string
+                   end
   end
 end
 
@@ -187,9 +204,21 @@ class Configuration
   attr_accessor :tree
 
   def initialize(xml_str, init_configuration)
-    @tree = REXML::Document.new(xml_str).root
-    @init_configuration = init_configuration
+    escaped_xml_string = xml_str.gsub(/<k>(.*?)<\/k>/m) do |match|
+      inner_text = $1.strip # <k>と</k>の間のテキスト
+      escaped_text = CGI.escapeHTML(inner_text) # エスケープ処理
+      "<k>#{escaped_text}</k>"
+    end
+    
+    doc = Nokogiri::XML(escaped_xml_string)
 
+    doc.traverse do |node|
+      node.content = CGI.escapeHTML(node.content.strip) if node.text?
+    end
+
+    xml_str = doc.to_s
+    @init_configuration = init_configuration
+    @tree = REXML::Document.new(xml_str).root
     @tree.each_element do |element|
       parse_element(element)
     end
@@ -201,14 +230,15 @@ class Configuration
     end
 
     init_element = @init_configuration.tree.get_elements(element.xpath).first
-    element.sort = init_element.sort
+    element.sort = init_element.sort if init_element
   end
 end
 
 class PrintConfiguration
   def initialize(result, init_configuration)
     @result = result
-    @before_configration = Configuration.new(Strings::ANSI.sanitize(result.before_configration.to_s), init_configuration)
+    @before_configration = Configuration.new(Strings::ANSI.sanitize(result.before_configration.to_s),
+                                             init_configuration)
     @after_configration = Configuration.new(Strings::ANSI.sanitize(result.after_configration.to_s), init_configuration)
   end
 

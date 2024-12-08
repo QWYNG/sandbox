@@ -1,0 +1,76 @@
+<svg width="100000px" height="100000px" xmlns="http://www.w3.org/2000/svg">
+
+<rect x="1" y="1" width="1040" height="100" fill="lightgray" stroke="black"/>
+<text x="101" y="51" text-anchor="middle">
+k
+</text>
+<text x="21" y="76" font-size="20">
+f ~&gt; #freezer_+__LAMBDA-SYNTAX_Exp_Exp_Exp0_ ( 3 ~&gt; .K ) ~&gt; func |-&gt; 0 ~&gt; .Map ~&gt; .K
+</text>
+<rect x="1" y="101" width="300" height="150" fill="lightgray" stroke="black"/>
+<text x="101" y="126" text-anchor="middle">
+env
+</text>
+<rect x="11" y="151" width="180" height="40" fill="lightgreen" stroke="black"/>
+<text x="101" y="176" text-anchor="middle" font-size="20">
+f -&gt; 1
+</text>
+<rect x="1" y="251" width="1650" height="200" fill="lightgray" stroke="black"/>
+<text x="101" y="276" text-anchor="middle">
+store
+</text>
+<rect x="11" y="301" width="180" height="40" fill="lightgreen" stroke="black"/>
+<text x="101" y="326" text-anchor="middle" font-size="20">
+0 -&gt; closure ( .Map , f , f + 3 )
+</text>
+<rect x="11" y="351" width="180" height="40" fill="lightgreen" stroke="black"/>
+<text x="101" y="376" text-anchor="middle" font-size="20">
+1 -&gt; 4
+</text>
+<rect x="1" y="451" width="820" height="200" fill="lightgray" stroke="black"/>
+<text x="21" y="471">
+Rewrite rule: LAMBDA.lookup
+</text>
+<foreignObject x="11" y="491" width="1240" height="200">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<h3>
+rule [lookup]: &lt;k&gt; X =&gt; V ...&lt;/k&gt;
+
+</h3>
+<h3>
+       &lt;env&gt;... X |-&gt; N ...&lt;/env&gt;
+
+</h3>
+<h3>
+       &lt;store&gt;... N |-&gt; V ...&lt;/store&gt;
+</h3>
+</html>
+</foreignObject>
+<rect x="1" y="651" width="1040" height="100" fill="lightgray" stroke="black"/>
+<text x="101" y="701" text-anchor="middle">
+k
+</text>
+<text x="21" y="726" font-size="20">
+4 ~&gt; #freezer_+__LAMBDA-SYNTAX_Exp_Exp_Exp0_ ( 3 ~&gt; .K ) ~&gt; func |-&gt; 0 ~&gt; .Map ~&gt; .K
+</text>
+<rect x="1" y="751" width="300" height="150" fill="lightgray" stroke="black"/>
+<text x="101" y="776" text-anchor="middle">
+env
+</text>
+<rect x="11" y="801" width="180" height="40" fill="lightgreen" stroke="black"/>
+<text x="101" y="826" text-anchor="middle" font-size="20">
+f -&gt; 1
+</text>
+<rect x="1" y="901" width="1650" height="200" fill="lightgray" stroke="black"/>
+<text x="101" y="926" text-anchor="middle">
+store
+</text>
+<rect x="11" y="951" width="180" height="40" fill="lightgreen" stroke="black"/>
+<text x="101" y="976" text-anchor="middle" font-size="20">
+0 -&gt; closure ( .Map , f , f + 3 )
+</text>
+<rect x="11" y="1001" width="180" height="40" fill="lightgreen" stroke="black"/>
+<text x="101" y="1026" text-anchor="middle" font-size="20">
+1 -&gt; 4
+</text>
+</svg>
