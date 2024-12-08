@@ -1,5 +1,3 @@
-# frozen_string_literal: true
-
 require 'rexml/document'
 require 'strings-ansi'
 require 'victor'
@@ -19,7 +17,9 @@ class StackDiagram
 
   def generate_svg(x, y)
     svg = Victor::SVG.new
-    svg.rect(x:, y:, width: 400 + @stack.max{ |x, y| x.size <=> y.size} * 50, height: 50 * @stack.size + 100, fill: 'lightgray', stroke: 'black')
+    svg.rect(x:, y:, width: 400 + @stack.max { |x, y|
+      x.size <=> y.size
+    } * 50, height: 50 * @stack.size + 100, fill: 'lightgray', stroke: 'black')
     svg.text(@name, x: x + 100, y: y + 25, 'text-anchor' => 'middle')
 
     @stack.each_with_index do |element, index|
@@ -47,7 +47,9 @@ class MapDiagram
 
   def generate_svg(x, y)
     svg = Victor::SVG.new
-    svg.rect(x:, y:, width: 200 + @map.max{ |x, y| x.to_s.size <=> y.to_s.size}.join.size * 50, height: 50 * @map.size + 100, fill: 'lightgray', stroke: 'black')
+    svg.rect(x:, y:, width: 200 + @map.max { |x, y|
+      x.to_s.size <=> y.to_s.size
+    }.join.size * 50, height: 50 * @map.size + 100, fill: 'lightgray', stroke: 'black')
     svg.text(@name, x: x + 100, y: y + 25, 'text-anchor' => 'middle')
 
     @map.each_with_index do |(key, value), index|
@@ -160,12 +162,12 @@ class InitConfiguration
   attr_accessor :tree
 
   def initialize(xml_str)
-    escaped_xml_string = xml_str.gsub(/<k>(.*?)<\/k>/m) do |match|
-      inner_text = $1.strip # <k>と</k>の間のテキスト
+    escaped_xml_string = xml_str.gsub(%r{<k>(.*?)</k>}m) do |_match|
+      inner_text = ::Regexp.last_match(1).strip # <k>と</k>の間のテキスト
       escaped_text = CGI.escapeHTML(inner_text) # エスケープ処理
       "<k>#{escaped_text}</k>"
     end
-    
+
     doc = Nokogiri::XML(escaped_xml_string)
 
     # タグ以外の内容をエスケープ
@@ -204,12 +206,12 @@ class Configuration
   attr_accessor :tree
 
   def initialize(xml_str, init_configuration)
-    escaped_xml_string = xml_str.gsub(/<k>(.*?)<\/k>/m) do |match|
-      inner_text = $1.strip # <k>と</k>の間のテキスト
+    escaped_xml_string = xml_str.gsub(%r{<k>(.*?)</k>}m) do |_match|
+      inner_text = ::Regexp.last_match(1).strip # <k>と</k>の間のテキスト
       escaped_text = CGI.escapeHTML(inner_text) # エスケープ処理
       "<k>#{escaped_text}</k>"
     end
-    
+
     doc = Nokogiri::XML(escaped_xml_string)
 
     doc.traverse do |node|
