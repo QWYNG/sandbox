@@ -7,11 +7,15 @@ import os
 
 
 def kompile_wrapper(*args):    
+    rm_cmd = ["rm", "-rf", "*-kompiled"]
+    print("Removing previous kompiled directories: ", " ".join(rm_cmd))
+    subprocess.run(rm_cmd, check=True)
+
     cmd = ["kompile", "--verbose"] + list(args) + ["--enable-llvm-debug"]
 
     master_fd, slave_fd = pty.openpty()
 
-    process = subprocess.Popen(cmd, stdout=slave_fd, stderr=slave_fd, close_fds=True)
+    subprocess.Popen(cmd, stdout=slave_fd, stderr=slave_fd, close_fds=True)
     os.close(slave_fd)
 
     stdout_decoded = []
