@@ -144,7 +144,7 @@ module KOOL
 ```k
   syntax KItem ::= "undefined"
 
-  rule <k> var X:Id; => .K ...</k>
+  rule [declare]: <k> var X:Id; => .K ...</k>
        <env> Env => Env[X <- L] </env>
        <store>... .Map => L |-> undefined ...</store>
        <nextLoc> L => L +Int 1 </nextLoc>
@@ -166,7 +166,7 @@ module KOOL
 
 ```k
   syntax Id ::= "$1" [token] | "$2" [token]
-  rule var X:Id[N1:Int, N2:Int, Vs:Vals];
+  rule [declares]: var X:Id[N1:Int, N2:Int, Vs:Vals];
     => var X[N1];
        {
          for(var $1 = 0; $1 <= N1 - 1; ++$1) {
@@ -206,7 +206,7 @@ module KOOL
 ```
 
 ```k
-  rule <k> return(V:Val); ~> _ => V ~> K </k>
+  rule [return]: <k> return(V:Val); ~> _ => V ~> K </k>
        <control>
          <fstack> ListItem(fstackFrame(Env,K,XS,<crntObj> CO </crntObj>)) => .List ...</fstack>
          <xstack> _ => XS </xstack>
@@ -275,7 +275,7 @@ module KOOL
 ```k
   syntax KItem ::= "popx"
 
-  rule <k> (try S1 catch(X) {S2} => S1 ~> popx) ~> K </k>
+  rule [try_catch]: <k> (try S1 catch(X) {S2} => S1 ~> popx) ~> K </k>
        <control>
          <xstack> .List => ListItem(xstackFrame(X, S2, K, Env, C)) ...</xstack>
          C
@@ -290,7 +290,7 @@ module KOOL
 ```
 
 ```k
-    rule <k> throw V:Val; ~> _ => { var X = V; S2 } ~> K </k>
+    rule [throw]: <k> throw V:Val; ~> _ => { var X = V; S2 } ~> K </k>
        <control>
          <xstack> ListItem(xstackFrame(X, S2, K, Env, C)) => .List ...</xstack>
          (_ => C)
@@ -299,7 +299,7 @@ module KOOL
 ```
 
 ```k
-  rule <thread>...
+  rule [spawn]: <thread>...
          <k> spawn S => !T:Int ...</k>
          <env> Env </env>
          <crntObj> Obj </crntObj>
@@ -315,19 +315,19 @@ module KOOL
 
 
 ```k
-  rule (<thread>... <k>.K</k> <holds>H</holds> <id>T</id> ...</thread> => .Bag)
+  rule [thread_terminate]: (<thread>... <k>.K</k> <holds>H</holds> <id>T</id> ...</thread> => .Bag)
        <busy> Busy => Busy -Set keys(H) </busy>
        <terminated>... .Set => SetItem(T) ...</terminated>
 ```
 
 ```k
-  rule <k> join T:Int; => .K ...</k>
+  rule [join]: <k> join T:Int; => .K ...</k>
        <terminated>... SetItem(T) ...</terminated>
 ```
 
 
 ```k
-  rule <k> acquire V:Val; => .K ...</k>
+  rule [acquire lock]: <k> acquire V:Val; => .K ...</k>
        <holds>... .Map => V |-> 0 ...</holds>
        <busy> Busy (.Set => SetItem(V)) </busy>
     requires (notBool(V in Busy))
@@ -335,23 +335,23 @@ module KOOL
 
 
 ```k
-  rule <k> acquire V; => .K ...</k>
+  rule [acquire wait]: <k> acquire V; => .K ...</k>
      <holds>... V:Val |-> (N => N +Int 1) ...</holds>
 ```
 
 
 ```k
-  rule <k> release V:Val; => .K ...</k>
+  rule [release]: <k> release V:Val; => .K ...</k>
        <holds>... V |-> (N => N -Int 1) ...</holds>
     requires N >Int 0
 ```
 
 ```k
-  rule <k> release V; => .K ...</k> <holds>... V:Val |-> 0 => .Map ...</holds>
+  rule [release free]: <k> release V; => .K ...</k> <holds>... V:Val |-> 0 => .Map ...</holds>
        <busy>... SetItem(V) => .Set ...</busy>
 ```
 ```k
-  rule <k> rendezvous V:Val; => .K ...</k>
+  rule [rendezvous]: <k> rendezvous V:Val; => .K ...</k>
        <k> rendezvous V; => .K ...</k>
 ```
 
@@ -376,7 +376,7 @@ rule [extends]: <k> class Class1 extends Class2 { S } => .K ...</k>
 ```k
   syntax KItem ::= "envStackFrame" "(" Id "," Map ")"
 
-  rule <k> new Class:Id(Vs:Vals) ~> K
+  rule [new]: <k> new Class:Id(Vs:Vals) ~> K
            => create(Class) ~> storeObj ~> Class(Vs); return this; </k>
        <env> Env => .Map </env>
        <nextLoc> L:Int => L +Int 1 </nextLoc>
@@ -391,52 +391,52 @@ rule [extends]: <k> class Class1 extends Class2 { S } => .K ...</k>
 
   syntax KItem ::= create(Id)
 
-  rule <k> create(Class:Id)
+  rule [create class]: <k> create(Class:Id)
            => create(Class1) ~> setCrntClass(Class) ~> S ~> addEnvLayer ...</k>
        <className> Class </className>
        <baseClass> Class1:Id </baseClass>
        <declarations> S </declarations>
 
-  rule <k> create(Object) => .K ...</k>
+  rule [create Object]: <k> create(Object) => .K ...</k>
 
   syntax KItem ::= setCrntClass(Id)
 
-  rule <k> setCrntClass(C) => .K ...</k>
+  rule [setCrntClass]: <k> setCrntClass(C) => .K ...</k>
        <crntClass> _ => C </crntClass>
 
   syntax KItem ::= "addEnvLayer"
 
-  rule <k> addEnvLayer => .K ...</k>
+  rule [addEnvLayer]: <k> addEnvLayer => .K ...</k>
        <env> Env => .Map </env>
        <crntClass> Class:Id </crntClass>
        <envStack> .List => ListItem(envStackFrame(Class, Env)) ...</envStack>
 
   syntax KItem ::= "storeObj"
 
-  rule <k> storeObj => .K ...</k>
+  rule [storeObj]: <k> storeObj => .K ...</k>
        <crntObj> <crntClass> CC </crntClass> <envStack> ES </envStack> (<location> L:Int </location> => .Bag) </crntObj>
        <store>... .Map => L |-> objectClosure(CC, ES) ...</store>
 
-  rule <k> this => objectClosure(CC, ES) ...</k>
+  rule [this]: <k> this => objectClosure(CC, ES) ...</k>
        <crntObj> <crntClass> CC </crntClass> <envStack> ES </envStack> </crntObj>
 
 ```
 
 ```k
-  rule <k> X:Id => this . X ...</k> <env> Env:Map </env>
+  rule [this.x] <k> X:Id => this . X ...</k> <env> Env:Map </env>
     requires notBool(X in keys(Env))
 
   context HOLE._::Id requires (HOLE =/=K super)
 
 
-  rule objectClosure(Class:Id, ListItem(envStackFrame(Class,Env)) EStack)
+  rule [objectclosure]: objectClosure(Class:Id, ListItem(envStackFrame(Class,Env)) EStack)
        . X:Id
     => lookupMember(ListItem(envStackFrame(Class,Env)) EStack, X)
   rule objectClosure(Class:Id, (ListItem(envStackFrame(Class':Id,_)) => .List) _)
        . _X:Id
     requires Class =/=K Class'
 
-  rule <k> super . X => lookupMember(EStack, X) ...</k>
+  rule [super]: <k> super . X => lookupMember(EStack, X) ...</k>
        <crntClass> Class:Id </crntClass>
        <envStack> ListItem(envStackFrame(Class,_)) EStack </envStack>
   rule <k> super . _X ...</k>
@@ -446,7 +446,7 @@ rule [extends]: <k> class Class1 extends Class2 { S } => .K ...</k>
 ```
 
 ```k
-  rule <k> method F:Id(Xs:Ids) S => .K ...</k>
+  rule [method]: <k> method F:Id(Xs:Ids) S => .K ...</k>
        <crntClass> Class:Id </crntClass>
        <location> OL:Int </location>
        <env> Env => Env[F <- L] </env>
@@ -487,7 +487,7 @@ rule [extends]: <k> class Class1 extends Class2 { S } => .K ...</k>
 
 
 ```k
-  rule <k> methodClosure(Class,OL,Xs,S)(Vs:Vals) ~> K
+  rule [application]: <k> methodClosure(Class,OL,Xs,S)(Vs:Vals) ~> K
            => mkDecls(Xs,Vs) S return; </k>
        <env> Env => .Map </env>
        <store>... OL |-> objectClosure(_, EnvStack)...</store>
