@@ -275,7 +275,7 @@ module KOOL
 ```k
   syntax KItem ::= "popx"
 
-  rule [try_catch]: <k> (try S1 catch(X) {S2} => S1 ~> popx) ~> K </k>
+  rule [tryCatch]: <k> (try S1 catch(X) {S2} => S1 ~> popx) ~> K </k>
        <control>
          <xstack> .List => ListItem(xstackFrame(X, S2, K, Env, C)) ...</xstack>
          C
@@ -315,7 +315,7 @@ module KOOL
 
 
 ```k
-  rule [thread_terminate]: (<thread>... <k>.K</k> <holds>H</holds> <id>T</id> ...</thread> => .Bag)
+  rule [threadTerminate]: (<thread>... <k>.K</k> <holds>H</holds> <id>T</id> ...</thread> => .Bag)
        <busy> Busy => Busy -Set keys(H) </busy>
        <terminated>... .Set => SetItem(T) ...</terminated>
 ```
@@ -327,7 +327,7 @@ module KOOL
 
 
 ```k
-  rule [acquire lock]: <k> acquire V:Val; => .K ...</k>
+  rule [acquireLock]: <k> acquire V:Val; => .K ...</k>
        <holds>... .Map => V |-> 0 ...</holds>
        <busy> Busy (.Set => SetItem(V)) </busy>
     requires (notBool(V in Busy))
@@ -335,7 +335,7 @@ module KOOL
 
 
 ```k
-  rule [acquire wait]: <k> acquire V; => .K ...</k>
+  rule [acquireWait]: <k> acquire V; => .K ...</k>
      <holds>... V:Val |-> (N => N +Int 1) ...</holds>
 ```
 
@@ -347,7 +347,7 @@ module KOOL
 ```
 
 ```k
-  rule [release free]: <k> release V; => .K ...</k> <holds>... V:Val |-> 0 => .Map ...</holds>
+  rule [releaseFree]: <k> release V; => .K ...</k> <holds>... V:Val |-> 0 => .Map ...</holds>
        <busy>... SetItem(V) => .Set ...</busy>
 ```
 ```k
@@ -391,13 +391,13 @@ rule [extends]: <k> class Class1 extends Class2 { S } => .K ...</k>
 
   syntax KItem ::= create(Id)
 
-  rule [create class]: <k> create(Class:Id)
+  rule [createClass]: <k> create(Class:Id)
            => create(Class1) ~> setCrntClass(Class) ~> S ~> addEnvLayer ...</k>
        <className> Class </className>
        <baseClass> Class1:Id </baseClass>
        <declarations> S </declarations>
 
-  rule [create Object]: <k> create(Object) => .K ...</k>
+  rule [createObject]: <k> create(Object) => .K ...</k>
 
   syntax KItem ::= setCrntClass(Id)
 
@@ -423,7 +423,7 @@ rule [extends]: <k> class Class1 extends Class2 { S } => .K ...</k>
 ```
 
 ```k
-  rule [this.x] <k> X:Id => this . X ...</k> <env> Env:Map </env>
+  rule [thisX]: <k> X:Id => this . X ...</k> <env> Env:Map </env>
     requires notBool(X in keys(Env))
 
   context HOLE._::Id requires (HOLE =/=K super)
