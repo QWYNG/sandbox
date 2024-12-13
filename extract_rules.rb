@@ -12,7 +12,7 @@ rules_to_disable = %w[declare
    threadTerminate
    join
    acquireLock
-   acnquireWait
+   acquireWait
    release
    releaseFree
    rendezvous
@@ -31,6 +31,6 @@ rules_to_disable = %w[declare
    method
    application]
 
-   rule_pattern = /^\s*rule\s*\[#{rules_to_disable.join('|')}\]:\s*/
+   rule_pattern = /rule\s\[(#{rules_to_disable.join('|')})\]/
    updated_content = File.read(input_file).gsub(rule_pattern, 'rule')
 File.write(output_file, updated_content)
