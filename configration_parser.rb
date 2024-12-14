@@ -189,7 +189,7 @@ class InitConfiguration
       parse_element(child)
     end
 
-    element.sort = case element.text.strip
+    element.sort = case element.text&.strip
                    in '.Map'
                      :map
                    in '.List'

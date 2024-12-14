@@ -90,7 +90,9 @@ script_file, semantics_file = ARGV
 require 'pathname'
 
 kompiled_name = Pathname.new(semantics_file).basename.sub_ext('').to_s
-results = run_k("#{script_file} --debugger", rules: Rule.get_rules(semantics_file, "./#{kompiled_name}-kompiled/"))
+rules = Rule.get_rules(semantics_file, "./#{kompiled_name}-kompiled/")
+pp rules.map(&:label)
+results = run_k("#{script_file} --debugger", rules:)
 
 puts "\rGeneration complete!"
 
