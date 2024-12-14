@@ -2,3 +2,4 @@
 ./slideshow.html
 *.svg
 *.png
+.idea/*

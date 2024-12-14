@@ -17,13 +17,13 @@ class StackDiagram
 
   def generate_svg(x, y)
     svg = Victor::SVG.new
-    svg.rect(x:, y:, width: 400 + @stack.max { |x, y|
+    svg.rect(x:, y:, width: 400 + (@stack.max { |x, y|
       x.size <=> y.size
-    } * 50, height: 50 * @stack.size + 100, fill: 'lightgray', stroke: 'black')
+    } * 50), height: (50 * @stack.size) + 100, fill: 'lightgray', stroke: 'black')
     svg.text(@name, x: x + 100, y: y + 25, 'text-anchor' => 'middle')
 
     @stack.each_with_index do |element, index|
-      y_position = y + index * 50 + 50
+      y_position = y + (index * 50) + 50
       svg.rect(x: x + 10, y: y_position, width: 180, height: 40, fill: 'lightblue', stroke: 'black')
       svg.text(element.to_s, x: x + 100, y: y_position + 20, 'text-anchor' => 'middle', 'font-size' => 20)
     end
@@ -47,13 +47,13 @@ class MapDiagram
 
   def generate_svg(x, y)
     svg = Victor::SVG.new
-    svg.rect(x:, y:, width: 200 + @map.max { |x, y|
+    svg.rect(x:, y:, width: 200 + (@map.max { |x, y|
       x.to_s.size <=> y.to_s.size
-    }.join.size * 50, height: 50 * @map.size + 100, fill: 'lightgray', stroke: 'black')
+    }.join.size * 50), height: (50 * @map.size) + 100, fill: 'lightgray', stroke: 'black')
     svg.text(@name, x: x + 100, y: y + 25, 'text-anchor' => 'middle')
 
     @map.each_with_index do |(key, value), index|
-      y_position = y + index * 50 + 50
+      y_position = y + (index * 50) + 50
       svg.rect(x: x + 10, y: y_position, width: 180, height: 40, fill: 'lightgreen', stroke: 'black')
 
       if value.empty?
@@ -79,7 +79,7 @@ class NamespaceDiagram
 
   def generate_svg(x, y)
     svg = Victor::SVG.new
-    svg.rect(x:, y:, width: 500, height: 400 * @children_count + 50, fill: 'lightgray', stroke: 'black')
+    svg.rect(x:, y:, width: 500, height: (400 * @children_count) + 50, fill: 'lightgray', stroke: 'black')
     svg.text(@name, x: x + 100, y: y + 50, 'text-anchor' => 'middle')
 
     svg
@@ -94,7 +94,7 @@ class StringDiagram
 
   def generate_svg(x, y)
     svg = Victor::SVG.new
-    svg.rect(x:, y:, width: 200 + @value.size * 10, height: 100, fill: 'lightgray', stroke: 'black')
+    svg.rect(x:, y:, width: 200 + (@value.size * 10), height: 100, fill: 'lightgray', stroke: 'black')
     svg.text(@name, x: x + 100, y: y + 50, 'text-anchor' => 'middle')
     svg.text(@value, x: x + 20, y: y + 75, 'font-size' => 20)
 
@@ -114,14 +114,14 @@ class Diagram
     map_svg = map_diagram.generate_svg(@current_x, @current_y)
     @svg.append(map_svg)
     @current_x += 0
-    @current_y += 50 * map_diagram.size + 100
+    @current_y += (50 * map_diagram.size) + 100
   end
 
   def add_stack(stack_diagram)
     stack_svg = stack_diagram.generate_svg(@current_x, @current_y)
     @svg.append(stack_svg)
     @current_x += 0
-    @current_y += 50 * stack_diagram.size + 100
+    @current_y += (50 * stack_diagram.size) + 100
   end
 
   def add_namespace(namespace_diagram)
@@ -139,10 +139,11 @@ class Diagram
   end
 
   def add_related_rule(rule)
-    @svg.rect(x: @current_x, y: @current_y, width: 400 + rule.rewrite_rule.size * 4,
-              height: 50 * rule.rewrite_rule.lines.size + 50, fill: 'lightgray', stroke: 'black')
+    @svg.rect(x: @current_x, y: @current_y, width: 400 + (rule.rewrite_rule.size * 4),
+              height: (50 * rule.rewrite_rule.lines.size) + 50, fill: 'lightgray', stroke: 'black')
     @svg.text("Rewrite rule: #{rule.label}", x: @current_x + 20, y: @current_y + 20)
-    @svg.foreignObject(x: @current_x + 10, y: @current_y + 40, width: 400 + rule.rewrite_rule.size * 8, height: 200) do
+    @svg.foreignObject(x: @current_x + 10, y: @current_y + 40, width: 400 + (rule.rewrite_rule.size * 8),
+                       height: 200) do
       @svg.html(xmlns: 'http://www.w3.org/1999/xhtml') do
         rule.rewrite_rule.each_line do |line|
           @svg.h3(line)
@@ -150,7 +151,7 @@ class Diagram
       end
     end
 
-    @current_y += 50 * rule.rewrite_rule.lines.size + 50
+    @current_y += (50 * rule.rewrite_rule.lines.size) + 50
   end
 
   def save(file_name = 'combined_diagram.svg')
