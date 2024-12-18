@@ -17,7 +17,7 @@ rules_to_disable = [
   'release',
   'releaseFree',
   'rendezvous',
-  'class',
+  # 'class',
   'extends',
   'new',
   'createClass',

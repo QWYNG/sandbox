@@ -95,7 +95,8 @@ pp rules.map(&:label)
 results = run_k("#{script_file} --debugger", rules:)
 
 puts "\rGeneration complete!"
-
+puts "rm exsiting svg files"
+Dir.glob('output*.svg').each { |f| File.delete(f) }
 filename = 'output'
 generate_svg(results)
 puts "#{filename} generated"

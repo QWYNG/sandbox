@@ -1,28 +1,27 @@
  ```k
-module KOOL-SYNTAX
+module CLASS-SYNTAX
   imports DOMAINS-SYNTAX
 
   syntax Id ::= "Object" [token] | "Main" [token]
 
   syntax Stmt ::= "var" Exps ";"
                 | "method" Id "(" Ids ")" Block  // called "function" in SIMPLE
-                | "class" Id Block               // KOOL
-                | "class" Id "extends" Id Block  // KOOL
+                | "class" Id Block               // CLASS
+                | "class" Id "extends" Id Block  // CLASS
 
   syntax Exp ::= Int | Bool | String | Id
-               | "this"                                 // KOOL
-               | "super"                                // KOOL
+               | "this"                                 // CLASS
+               | "super"                                // CLASS
                | "(" Exp ")"             [bracket]
                | "++" Exp
-               | Exp "instanceOf" Id     [strict(1)]    // KOOL
-               | "(" Id ")" Exp          [strict(2)]    // KOOL  cast
-               | "new" Id "(" Exps ")"   [strict(2)]    // KOOL
-               | Exp "." Id                             // KOOL
+               | Exp "instanceOf" Id     [strict(1)]    // CLASS
+               | "(" Id ")" Exp          [strict(2)]    // CLASS  cast
+               | "new" Id "(" Exps ")"   [strict(2)]    // CLASS
+               | Exp "." Id                             // CLASS
                > Exp "[" Exps "]"        [strict]
                > Exp "(" Exps ")"        [strict(2)]    // was strict in SIMPLE
                | "-" Exp                 [strict]
                | "sizeOf" "(" Exp ")"    [strict]
-               | "read" "(" ")"
                > left:
                  Exp "*" Exp             [strict, left]
                | Exp "/" Exp             [strict, left]
@@ -41,7 +40,6 @@ module KOOL-SYNTAX
                > left:
                  Exp "&&" Exp            [strict(1), left]
                | Exp "||" Exp            [strict(1), left]
-               > "spawn" Block
                > Exp "=" Exp             [strict(2), right]
 
   syntax Ids  ::= List{Id,","}
@@ -62,12 +60,6 @@ module KOOL-SYNTAX
                 | "return" Exp ";"                      [strict]
                 | "return" ";"                          [macro]
                 | "print" "(" Exps ")" ";"              [strict]
-                | "try" Block "catch" "(" Id ")" Block
-                | "throw" Exp ";"                       [strict]
-                | "join" Exp ";"                        [strict]
-                | "acquire" Exp ";"                     [strict]
-                | "release" Exp ";"                     [strict]
-                | "rendezvous" Exp ";"                  [strict]
 
   syntax Stmt ::= Stmt Stmt                          [right]
 
@@ -81,8 +73,8 @@ endmodule
 ```
 
 ```k
-module KOOL
-  imports KOOL-SYNTAX
+module CLASS
+  imports CLASS-SYNTAX
   imports DOMAINS
 
   syntax Val ::=  Int |Bool | String
@@ -101,42 +93,27 @@ module KOOL
 
 
 ```k
-  configuration <T color="red">
-                  <threads color="orange">
-                    <thread multiplicity="*" type="Set" color="yellow" initial="">
-                      <k color="green"> $PGM:Stmt ~> execute </k>
-
-                      <control color="cyan">
-                        <fstack color="blue"> .List </fstack>
-                        <xstack color="purple"> .List </xstack>
-
-                        <crntObj color="Fuchsia">  // KOOL
-                           <crntClass> Object </crntClass>
-                           <envStack> .List </envStack>
-                           <location multiplicity="?"> .K </location>
-                        </crntObj>
-                      </control>
-
-                      <env color="violet"> .Map </env>
-                      <holds color="black"> .Map </holds>
-                      <id color="pink"> 0 </id>
-                    </thread>
-                  </threads>
-
-                  <store color="white"> .Map </store>
-                  <busy color="cyan">.Set </busy>
-                  <terminated color="red"> .Set </terminated>
-                  <input color="magenta"> .List </input>
-                  <output color="brown" > .List </output>
-                  <nextLoc color="gray"> 0 </nextLoc>
-
-                  <classes color="Fuchsia">        // KOOL
-                     <classData multiplicity="*" type="Map" color="Fuchsia">
-                        <className color="Fuchsia"> Main </className>
-                        <baseClass color="Fuchsia"> Object </baseClass>
-                        <declarations color="Fuchsia"> .K </declarations>
-                     </classData>
-                  </classes>
+  configuration <T>            
+                <k > $PGM:Stmt ~> execute </k>
+                <control >
+                  <fstack > .List </fstack>
+                  <crntObj>
+                      <crntClass> Object </crntClass>
+                      <envStack> .List </envStack>
+                      <location multiplicity="?"> .K </location>
+                  </crntObj>
+                </control>
+                <env > .Map </env>
+                <store > .Map </store>
+                <nextLoc > 0 </nextLoc>
+                <classes >        
+                    <classData multiplicity="*" type="Map" >
+                    <className > Main </className>
+                    <baseClass > Object </baseClass>
+                    <declarations > .K </declarations>
+                    </classData>
+                </classes>
+                <output > .List </output>
                 </T>
 ```
 
@@ -155,14 +132,14 @@ module KOOL
 ```
 
 
-```k
-  rule <k> var X:Id[N:Int]; => .K ...</k>
-       <env> Env => Env[X <- L] </env>
-       <store>... .Map => L |-> array(L +Int 1, N)
-                          (L +Int 1) ... (L +Int N) |-> undefined ...</store>
-       <nextLoc> L => L +Int 1 +Int N </nextLoc>
-    requires N >=Int 0
-```
+  ```k
+    rule <k> var X:Id[N:Int]; => .K ...</k>
+        <env> Env => Env[X <- L] </env>
+        <store>... .Map => L |-> array(L +Int 1, N)
+                            (L +Int 1) ... (L +Int N) |-> undefined ...</store>
+        <nextLoc> L => L +Int 1 +Int N </nextLoc>
+      requires N >=Int 0
+  ```
 
 ```k
   syntax Id ::= "$1" [token] | "$2" [token]
@@ -208,8 +185,7 @@ module KOOL
 ```k
   rule <k> return(V:Val); ~> _ => V ~> K </k>
        <control>
-         <fstack> ListItem(fstackFrame(Env,K,XS,<crntObj> CO </crntObj>)) => .List ...</fstack>
-         <xstack> _ => XS </xstack>
+         <fstack> ListItem(fstackFrame(Env,K,<crntObj> CO </crntObj>)) => .List ...</fstack>
          <crntObj> _ => CO </crntObj>
        </control>
        <env> _ => Env </env>
@@ -273,89 +249,6 @@ module KOOL
 
 
 ```k
-  syntax KItem ::= "popx"
-
-  rule <k> (try S1 catch(X) {S2} => S1 ~> popx) ~> K </k>
-       <control>
-         <xstack> .List => ListItem(xstackFrame(X, S2, K, Env, C)) ...</xstack>
-         C
-       </control>
-       <env> Env </env>
-```
-
-
-```k
-  rule <k> popx => .K ...</k>
-       <xstack> ListItem(_) => .List ...</xstack>
-```
-
-```k
-    rule <k> throw V:Val; ~> _ => { var X = V; S2 } ~> K </k>
-       <control>
-         <xstack> ListItem(xstackFrame(X, S2, K, Env, C)) => .List ...</xstack>
-         (_ => C)
-       </control>
-       <env> _ => Env </env>
-```
-
-```k
-  rule <thread>...
-         <k> spawn S => !T:Int ...</k>
-         <env> Env </env>
-         <crntObj> Obj </crntObj>
-       ...</thread>
-       (.Bag => <thread>...
-               <k> S </k>
-               <env> Env </env>
-               <id> !T </id>
-               <crntObj> Obj </crntObj>
-             ...</thread>)
-```
-
-
-
-```k
-  rule (<thread>... <k>.K</k> <holds>H</holds> <id>T</id> ...</thread> => .Bag)
-       <busy> Busy => Busy -Set keys(H) </busy>
-       <terminated>... .Set => SetItem(T) ...</terminated>
-```
-
-```k
-  rule <k> join T:Int; => .K ...</k>
-       <terminated>... SetItem(T) ...</terminated>
-```
-
-
-```k
-  rule <k> acquire V:Val; => .K ...</k>
-       <holds>... .Map => V |-> 0 ...</holds>
-       <busy> Busy (.Set => SetItem(V)) </busy>
-    requires (notBool(V in Busy))
-```
-
-
-```k
-  rule <k> acquire V; => .K ...</k>
-     <holds>... V:Val |-> (N => N +Int 1) ...</holds>
-```
-
-
-```k
-  rule <k> release V:Val; => .K ...</k>
-       <holds>... V |-> (N => N -Int 1) ...</holds>
-    requires N >Int 0
-```
-
-```k
-  rule <k> release V; => .K ...</k> <holds>... V:Val |-> 0 => .Map ...</holds>
-       <busy>... SetItem(V) => .Set ...</busy>
-```
-```k
-  rule <k> rendezvous V:Val; => .K ...</k>
-       <k> rendezvous V; => .K ...</k>
-```
-
-```k
   syntax Val ::= objectClosure(Id, List)
                | methodClosure(Id,Int,Ids,Stmt)
 ```
@@ -364,7 +257,7 @@ module KOOL
 ```k
 rule [class]: class C:Id S => class C extends Object S
 
-rule <k> class Class1 extends Class2 { S } => .K ...</k>
+rule [extend]: <k> class Class1 extends Class2 { S } => .K ...</k>
       <classes>... (.Bag => <classData>
                           <className> Class1 </className>
                           <baseClass> Class2 </baseClass>
@@ -376,17 +269,17 @@ rule <k> class Class1 extends Class2 { S } => .K ...</k>
 ```k
   syntax KItem ::= "envStackFrame" "(" Id "," Map ")"
 
-  rule <k> new Class:Id(Vs:Vals) ~> K
+  rule [new]: <k> new Class:Id(Vs:Vals) ~> K
            => create(Class) ~> storeObj ~> Class(Vs); return this; </k>
        <env> Env => .Map </env>
        <nextLoc> L:Int => L +Int 1 </nextLoc>
-       <control> <xstack> XS </xstack>
+       <control>
          <crntObj> Obj
                    => <crntClass> Object </crntClass>
                       <envStack> ListItem(envStackFrame(Object, .Map)) </envStack>
                       <location> L </location>
          </crntObj>
-         <fstack> .List => ListItem(fstackFrame(Env, K, XS, <crntObj> Obj </crntObj>)) ...</fstack>
+         <fstack> .List => ListItem(fstackFrame(Env, K, <crntObj> Obj </crntObj>)) ...</fstack>
        </control>
 
   syntax KItem ::= create(Id)
@@ -492,8 +385,7 @@ rule <k> class Class1 extends Class2 { S } => .K ...</k>
        <env> Env => .Map </env>
        <store>... OL |-> objectClosure(_, EnvStack)...</store>
        <control>
-          <xstack> XS </xstack>
-          <fstack> .List => ListItem(fstackFrame(Env, K, XS, <crntObj> Obj' </crntObj>))
+          <fstack> .List => ListItem(fstackFrame(Env, K, <crntObj> Obj' </crntObj>))
           ...</fstack>
           <crntObj> Obj' => <crntClass> Class </crntClass> <envStack> EnvStack </envStack> </crntObj>
        </control>
@@ -554,10 +446,7 @@ rule <k> class Class1 extends Class2 { S } => .K ...</k>
   rule <k> execute => new Main(.Vals); </k>
        <env> .Map </env>
 
-  syntax KItem ::= xstackFrame(Id,Stmt,K,Map,K)
-                 | (Id,Stmt,K,Map,K)
-
-  syntax KItem ::= fstackFrame(Map,K,List,K)
+  syntax KItem ::= fstackFrame(Map,K,K)
                  | (Map,K,K)
 
 
@@ -582,9 +471,9 @@ rule <k> class Class1 extends Class2 { S } => .K ...</k>
   rule N...M |-> _ => .Map  requires N >Int M
   rule N...M |-> K => N |-> K (N +Int 1)...M |-> K  requires N <=Int M
 
-  rule <k> read() => I ...</k> <input> ListItem(I:Int) => .List ...</input>
   rule <k> print((V:Val, Es) => Es); ...</k> <output>... .List => ListItem(V) </output>
   rule print(.Vals); => .K
+
   rule isKResult(_:Val) => true
   rule isKResult(_:Vals) => true
   rule isKResult(nothing) => true

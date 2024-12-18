@@ -1,8 +1,9 @@
-int x, y;
-
-while (x < 2) {
-    x = x + 1;
+int n, sum;
+n = 5;
+sum = 0;
+while (!(n < 0)) {
+    sum = sum + n;
+    n = n + -1;
 }
-
 
 

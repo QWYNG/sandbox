@@ -54,25 +54,26 @@ module LAMBDA
   rule if true  then E else _ => E
   rule if false then _ else E => E
 
-  rule [let]: let X = E in E':Exp => (lambda X . E') E
+  rule let X = E in E':Exp => (lambda X . E') E
   rule [letrec]: letrec F:Id X = E in E' => let F = mu F . lambda X . E in E'
 
-  rule [lambdaToClosure]: <k> lambda X:Id . E => closure(Rho,X,E) ...</k>
+  rule <k> lambda X:Id . E => closure(Rho,X,E) ...</k>
        <env> Rho </env>
 
-  rule <k> mu F . E => recClosure(Rho[F <- !N], E) ...</k>
+  rule [createRecClosure]: <k> mu F . E => recClosure(Rho[F <- !N], E) ...</k>
        <env> Rho </env>
        <store>... .Map => (!N:Int |-> recClosure(Rho[F <- !N], E)) ...</store>
+
   rule <k> recClosure(Rho, E) => E ~> Rho' ...</k>
        <env> Rho' => Rho </env>
 
-  rule [application]: <k> closure(Rho,X,E) V:Val => E ~> Rho' ...</k>
+  rule <k> closure(Rho,X,E) V:Val => E ~> Rho' ...</k>
        <env> Rho' => Rho[X <- !N] </env>
        <store>... .Map => (!N:Int |-> V) ...</store>
 
-  rule [lookup]: <k> X => V ...</k>
+  rule <k> X => V ...</k>
        <env>... X |-> N ...</env>
        <store>... N |-> V ...</store>
 
-  rule [recoverEnv]: <k> _:Val ~> (Rho => .K) ...</k> <env> _ => Rho </env>
+  rule <k> _:Val ~> (Rho => .K) ...</k> <env> _ => Rho </env>
 endmodule

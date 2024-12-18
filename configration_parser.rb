@@ -19,13 +19,15 @@ class StackDiagram
     svg = Victor::SVG.new
     svg.rect(x:, y:, width: 400 + (@stack.max { |x, y|
       x.size <=> y.size
-    } * 50), height: (50 * @stack.size) + 100, fill: 'lightgray', stroke: 'black')
+    }.size * 50), height: (50 * @stack.size) + 50, fill: 'lightgray', stroke: 'black')
     svg.text(@name, x: x + 100, y: y + 25, 'text-anchor' => 'middle')
 
     @stack.each_with_index do |element, index|
-      y_position = y + (index * 50) + 50
-      svg.rect(x: x + 10, y: y_position, width: 180, height: 40, fill: 'lightblue', stroke: 'black')
-      svg.text(element.to_s, x: x + 100, y: y_position + 20, 'text-anchor' => 'middle', 'font-size' => 20)
+      unless element.to_s == ".List"
+        y_position = y + (index * 50) + 50
+        svg.rect(x: x + 10, y: y_position, width: 180, height: 40, fill: 'lightblue', stroke: 'black')
+        svg.text(element.to_s, x: x + 100, y: y_position + 20, 'text-anchor' => 'middle', 'font-size' => 20)
+      end
     end
 
     svg
@@ -39,8 +41,8 @@ end
 class MapDiagram
   def initialize(name, map_string)
     @name = CGI.unescapeHTML(name)
-    @map = CGI.unescapeHTML(map_string).strip.split("\n").map do |line|
-      key, value = line.split('|->').map(&:strip)
+    @map = map_string.strip.split("\n").map do |line|
+      key, value = line.split('|-&amp;gt;', 2).map(&:strip)
       [key.to_sym, value.to_s]
     end.to_h
   end
@@ -49,17 +51,15 @@ class MapDiagram
     svg = Victor::SVG.new
     svg.rect(x:, y:, width: 200 + (@map.max { |x, y|
       x.to_s.size <=> y.to_s.size
-    }.join.size * 50), height: (50 * @map.size) + 100, fill: 'lightgray', stroke: 'black')
+    }.join.size * 50), height: (50 * @map.size) + 50, fill: 'lightgray', stroke: 'black')
     svg.text(@name, x: x + 100, y: y + 25, 'text-anchor' => 'middle')
 
     @map.each_with_index do |(key, value), index|
-      y_position = y + (index * 50) + 50
-      svg.rect(x: x + 10, y: y_position, width: 180, height: 40, fill: 'lightgreen', stroke: 'black')
-
-      if value.empty?
-        svg.text(key.to_s, x: x + 100, y: y_position + 25, 'text-anchor' => 'middle', 'font-size' => 20)
-      else
-        svg.text("#{key} -> #{value}", x: x + 100, y: y_position + 25, 'text-anchor' => 'middle', 'font-size' => 20)
+      unless value.empty?
+        y_position = y + (index * 50) + 50
+        text = "#{key} -> #{value.gsub("|-&amp;gt;", '->')}"
+        svg.rect(x: x + 10, y: y_position, width: 180 + (text.size * 10), height: 40, fill: 'lightgreen', stroke: 'black')
+        svg.text(text, x: x + 20, y: y_position + 25, 'font-size' => 20)
       end
     end
 
@@ -189,19 +189,26 @@ class InitConfiguration
     element.each_element do |child|
       parse_element(child)
     end
-
     element.sort = case element.text&.strip
                    in '.Map'
                      :map
                    in '.List'
                      :list
-                   in ''
-                     :namespace
                    else
-                     :string
+                     determine_sort(element)
                    end
   end
+
+  def determine_sort(element)
+    if element.children.empty?
+      :string
+    else
+      :namespace
+    end
+  end
 end
+
+
 
 class Configuration
   attr_accessor :tree
@@ -256,15 +263,14 @@ class PrintConfiguration
   def print_element(element, diagram, filename)
     case element.sort
     when :map
-      diagram.add_map(MapDiagram.new(element.name, element.text))
+      diagram.add_map(MapDiagram.new(element.name, element.children.each_slice(3).map { |group| group.join }.join("\n")) )
     when :list
       diagram.add_stack(StackDiagram.new(element.name, element.text))
     when :namespace
       diagram.add_namespace(NamespaceDiagram.new(element.name, element.elements.size))
     when :string
+      binding.irb if element.name == 'crntObj'
       diagram.add_string(StringDiagram.new(element.name, element.text))
-    else
-      puts "Element: #{element.name}"
     end
 
     element.each_element do |child|

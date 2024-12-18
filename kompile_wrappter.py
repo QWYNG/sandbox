@@ -7,9 +7,9 @@ import os
 
 
 def kompile_wrapper(*args):    
-    rm_cmd = ["rm", "-rf", "*-kompiled"]
+    rm_cmd = "rm -rf *-kompiled/"
     print("Removing previous kompiled directories: ", " ".join(rm_cmd))
-    subprocess.run(rm_cmd, check=True)
+    subprocess.run(rm_cmd, shell=True)
 
     cmd = ["kompile", "--verbose"] + list(args) + ["--enable-llvm-debug"]
 

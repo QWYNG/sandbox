@@ -3,12 +3,17 @@ class A {
     method A() {
         x = "A Var";
     }
-}
-class Main {
-  method Main() {
-    var a;
-    a = new A();
 
-    print(a.x);
+    method add1(n) {
+        return n + 1;
+    }
+}
+
+class Main {
+    method Main() {
+        var a;
+        a = new A();
+        print(a.x);
+        print(a.add1(2));
   }
 }
