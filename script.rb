@@ -81,6 +81,7 @@ rules = Rule.get_rules(semantics_file, "./#{kompiled_name}-kompiled/")
 pp rules.map(&:label)
 results = run_k("#{script_file} --debugger", rules:)
 mermaids = MermaidConverter.convert(results)
+File.delete(*Dir.glob('out/*'))
 mermaids.each_with_index do |mermaid, i|
   File.write("out/mermaid#{i}.md", mermaid)
 end
