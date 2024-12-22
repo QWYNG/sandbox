@@ -1,4 +1,4 @@
-# frozen_string_literal: true
+# frozen_string_literal: false
 
 require 'open3'
 require 'cgi'
@@ -9,9 +9,9 @@ require_relative 'mermaid_converter'
 require_relative 'result'
 
 def wait_for_prompt(stdout)
-  buffer = []
+  buffer = ''
   buffer << stdout.readpartial(1024) until buffer.include?('(gdb)')
-  buffer.join
+  buffer
 end
 
 def run_gdb_command(command, stdin, stdout)
