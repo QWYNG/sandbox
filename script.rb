@@ -1,18 +1,17 @@
-# ruby script.rb <script_file> <semantics_file> <modul>
-# e.g. ruby script.rb k/sum.imp k/imp.md IMP
+# frozen_string_literal: true
 
 require 'open3'
 require 'cgi'
 require 'optparse'
-require 'curses'
+require 'strings-ansi'
 require_relative 'rule'
-require_relative 'configration_parser'
-require_relative 'svg_to_png'
+require_relative 'mermaid_converter'
+require_relative 'result'
 
 def wait_for_prompt(stdout)
-  buffer = ''
+  buffer = []
   buffer << stdout.readpartial(1024) until buffer.include?('(gdb)')
-  buffer
+  buffer.join
 end
 
 def run_gdb_command(command, stdin, stdout)
@@ -21,7 +20,7 @@ def run_gdb_command(command, stdin, stdout)
 end
 
 def extract_configration(string)
-  string.match(%r{<T>(.*?)</T>}m)
+  Strings::ANSI.sanitize(string.match(%r{<T>(.*?)</T>}m).to_s)
 end
 
 def exited_normally?(string)
@@ -73,18 +72,6 @@ def run_k(opt, rules:)
   results
 end
 
-Result = Struct.new(:rule, :depth, :before_configration, :after_configration)
-
-def generate_svg(results)
-  init_result = results.shift
-
-  init_configuration = InitConfiguration.new(Strings::ANSI.sanitize(init_result.before_configration.to_s))
-
-  results.each do |result|
-    PrintConfiguration.new(result, init_configuration).print("output#{result.depth}")
-  end
-end
-
 script_file, semantics_file = ARGV
 
 require 'pathname'
@@ -93,10 +80,7 @@ kompiled_name = Pathname.new(semantics_file).basename.sub_ext('').to_s
 rules = Rule.get_rules(semantics_file, "./#{kompiled_name}-kompiled/")
 pp rules.map(&:label)
 results = run_k("#{script_file} --debugger", rules:)
-
-puts "\rGeneration complete!"
-puts "rm exsiting svg files"
-Dir.glob('output*.svg').each { |f| File.delete(f) }
-filename = 'output'
-generate_svg(results)
-puts "#{filename} generated"
+mermaids = MermaidConverter.convert(results)
+mermaids.each_with_index do |mermaid, i|
+  File.write("out/mermaid#{i}.md", mermaid)
+end
