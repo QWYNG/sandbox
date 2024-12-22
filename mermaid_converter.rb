@@ -17,7 +17,7 @@ class MermaidConverter
     @graphs.map do |graph|
       <<~MERMAID
         graph TD
-          #{graph}
+        #{graph}
       MERMAID
     end
   end
@@ -34,39 +34,44 @@ class MermaidConverter
 
   def build_graph(result)
     <<~NODE
-      #{xml_to_dynamic_mermaid(result.before_configuration, "T#{result.depth}")}
+      #{xml_to_dynamic_mermaid(result.before_configuration, 'before')}
+      #{xml_to_dynamic_mermaid(result.after_configuration, 'after')}
+      before -- "`**#{result.rule.label}**`" --> after
     NODE
   end
 
-  def xml_to_dynamic_mermaid(xml, prefix = 'T')
+  def xml_to_dynamic_mermaid(xml, prefix)
     mermaid = []
 
     prefix = prefix
     doc = Nokogiri::XML(xml)
 
-    mermaid << "subgraph #{prefix}[\"<T>\"]"
+    mermaid << "subgraph #{prefix}"
 
-    # ルート直下の要素
     doc.root.element_children.each do |child|
-      child_name = child.name
-      child_content = child.content.strip
-
-      if child.element_children.empty?
-        # 子要素を持たないノード
-        mermaid << "    #{prefix}_#{child_name}[\"<#{child_name}> #{child_content} </#{child_name}>\"]"
-      else
-        # 子要素を持つノード（サブグラフとして描画）
-        mermaid << "    subgraph #{prefix}_#{child_name}[\"<#{child_name}>\"]"
-        child.element_children.each do |sub_child|
-          sub_child_name = sub_child.name
-          sub_child_content = sub_child.content.strip
-          mermaid << "        #{prefix}_#{sub_child_name}[\"#{sub_child_name}: #{sub_child_content}\"]"
-        end
-        mermaid << '    end'
-      end
+      element_to_mermaid(child, mermaid, prefix)
     end
 
     mermaid << 'end'
     mermaid.join("\n")
+  end
+
+  def element_to_mermaid(element, mermaid, prefix)
+    element_name = element.name
+    element_content = element.content.strip
+
+    mermaid << "subgraph #{prefix}_#{element_name}[#{element_name}]"
+
+    if element.element_children.empty?
+      mermaid << "#{element_name}_#{element_name}_#{prefix}[\"#{element_content}\"]"
+    else
+      element.element_children.each do |child|
+        mermaid << element_to_mermaid(child, mermaid, prefix)
+      end
+    end
+
+    mermaid << 'end'
+
+    mermaid
   end
 end

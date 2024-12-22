@@ -43,7 +43,7 @@ def run_k(opt, rules:)
     depth = 0
 
     results << Result.new(Rule.new(label: 'Initial Configuration', rewrite_rule: ''), depth,
-                          extract_configration(first_out))
+                          extract_configuration(first_out))
     rules.each do |rule|
       match_out = run_gdb_command("k match #{rule.label} subject", stdin, stdout)
       results << Result.new(rule, depth, extract_configuration(first_out)) if match?(match_out)
