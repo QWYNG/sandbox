@@ -19,7 +19,7 @@ def run_gdb_command(command, stdin, stdout)
   wait_for_prompt(stdout).split('(gdb)').first.strip
 end
 
-def extract_configration(string)
+def extract_configuration(string)
   Strings::ANSI.sanitize(string.match(%r{<T>(.*?)</T>}m).to_s)
 end
 
@@ -46,7 +46,7 @@ def run_k(opt, rules:)
                           extract_configration(first_out))
     rules.each do |rule|
       match_out = run_gdb_command("k match #{rule.label} subject", stdin, stdout)
-      results << Result.new(rule, depth, extract_configration(first_out)) if match?(match_out)
+      results << Result.new(rule, depth, extract_configuration(first_out)) if match?(match_out)
     end
 
     until exited
@@ -54,12 +54,12 @@ def run_k(opt, rules:)
       step_out = run_gdb_command('k step', stdin, stdout)
 
       results.each do |result|
-        result.after_configration = extract_configration(step_out) if result.depth == depth - 1
+        result.after_configuration = extract_configuration(step_out) if result.depth == depth - 1
       end
 
       rules.each do |rule|
         match_out = run_gdb_command("k match #{rule.label} subject", stdin, stdout)
-        results << Result.new(rule, depth, extract_configration(step_out)) if match?(match_out)
+        results << Result.new(rule, depth, extract_configuration(step_out)) if match?(match_out)
       end
 
       exited = exited_normally?(step_out)

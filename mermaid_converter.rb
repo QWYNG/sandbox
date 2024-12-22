@@ -34,7 +34,7 @@ class MermaidConverter
 
   def build_graph(result)
     <<~NODE
-      #{xml_to_dynamic_mermaid(result.before_configration, "T#{result.depth}")}
+      #{xml_to_dynamic_mermaid(result.before_configuration, "T#{result.depth}")}
     NODE
   end
 
