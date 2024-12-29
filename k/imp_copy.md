@@ -91,9 +91,9 @@ computation and another for the state. For good encapsulation and clarity, we
 place the two cells inside another cell, the _top_ cell which is labeled `T`.
 
 ```k
-configuration <T color="yellow">
-                <k color="green"> $PGM:Pgm </k>
-                <state color="red"> .Map </state>
+configuration <T>
+                <k> $PGM:Pgm </k>
+                <state> .Map </state>
               </T>
 ```
 

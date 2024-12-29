@@ -11,7 +11,7 @@ require_relative 'result'
 def wait_for_prompt(stdout)
   buffer = ''
   buffer << stdout.readpartial(1024) until buffer.include?('(gdb)')
-  buffer
+  buffer.gsub(/\e\[[0-9;]*m/, '')
 end
 
 def run_gdb_command(command, stdin, stdout)
@@ -20,7 +20,7 @@ def run_gdb_command(command, stdin, stdout)
 end
 
 def extract_configuration(string)
-  Strings::ANSI.sanitize(string.match(%r{<T>(.*?)</T>}m).to_s)
+  string.match(%r{<T>(.*?)</T>}m).to_s
 end
 
 def exited_normally?(string)
@@ -79,7 +79,7 @@ require 'pathname'
 kompiled_name = Pathname.new(semantics_file).basename.sub_ext('').to_s
 rules = Rule.get_rules(semantics_file, "./#{kompiled_name}-kompiled/")
 pp rules.map(&:label)
-results = run_k("#{script_file} --debugger", rules:)
+results = run_k("#{script_file} --debugger --color off", rules:)
 mermaids = MermaidConverter.convert(results)
 File.delete(*Dir.glob('out/*'))
 mermaids.each_with_index do |mermaid, i|

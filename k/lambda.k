@@ -29,10 +29,10 @@ module LAMBDA
   imports LAMBDA-SYNTAX
   imports DOMAINS
 
-  configuration <T color="yellow">
-                  <k color="green"> $PGM:Exp </k>
-                  <env color="blue"> .Map </env>
-                  <store color="red"> .Map </store>
+  configuration <T>
+                  <k> $PGM:Exp </k>
+                  <env> .Map </env>
+                  <store> .Map </store>
                 </T>
 
   syntax Val ::= closure(Map,Id,Exp)

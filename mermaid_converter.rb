@@ -40,10 +40,10 @@ class MermaidConverter
     NODE
   end
 
-  def xml_to_dynamic_mermaid(xml, prefix)
+  def xml_to_dynamic_mermaid(xml_string, prefix)
     mermaid = []
+    xml = xml_string.gsub(/<\s/, '&lt; ').gsub(/<\s/, '&gt; ')
 
-    prefix = prefix
     doc = Nokogiri::XML(xml)
 
     mermaid << "subgraph #{prefix}"
@@ -62,13 +62,15 @@ class MermaidConverter
 
     mermaid << "subgraph #{prefix}_#{element_name}[#{element_name}]"
 
-    if element.element_children.empty?
-      mermaid << "#{element_name}_#{element_name}_#{prefix}[\"#{element_content}\"]"
-    else
-      element.element_children.each do |child|
-        mermaid << element_to_mermaid(child, mermaid, prefix)
+
+      if element_name == 'k'
+        mermaid << "#{element_name}_#{element_name}_#{prefix}[\"#{element_content}\"]"
+      else
+        element_content.to_s.each_line.with_index do |line, i|
+          mermaid << "#{element_name}_#{element_name}_#{prefix}_#{i}[\"#{line}\"]"
+        end
       end
-    end
+
 
     mermaid << 'end'
 
