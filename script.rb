@@ -80,8 +80,14 @@ kompiled_name = Pathname.new(semantics_file).basename.sub_ext('').to_s
 rules = Rule.get_rules(semantics_file, "./#{kompiled_name}-kompiled/")
 pp rules.map(&:label)
 results = run_k("#{script_file} --debugger --color off", rules:)
-mermaids = MermaidConverter.convert(results)
 File.delete(*Dir.glob('out/*'))
-mermaids.each_with_index do |mermaid, i|
-  File.write("out/mermaid#{i}.md", mermaid)
+
+if ARGV.include?('--join')
+  mermaid = MermaidConverter.convert_join(results)
+  File.write('out/mermaid.md', mermaid.join("\n"))
+else
+  mermaids = MermaidConverter.convert(results)
+  mermaids.each_with_index do |mermaid, i|
+    File.write("out/mermaid#{i}.md", mermaid)
+  end
 end

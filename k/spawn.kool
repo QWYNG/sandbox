@@ -1,13 +1,8 @@
+var two;
+two = 1;
 
-class Main {
-  method Main() {
-    var x = 0;
+spawn {
+  two = two + 1;
+};
 
-    spawn {
-        x = x + 1;
-    };
-
-    x = x + 1;
-    print(x);
-  }
-}
+print(two);

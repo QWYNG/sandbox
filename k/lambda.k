@@ -60,7 +60,7 @@ module LAMBDA
   rule [lambdaToClosure]: <k> lambda X:Id . E => closure(Rho,X,E) ...</k>
        <env> Rho </env>
 
-  rule <k> mu F . E => recClosure(Rho[F <- !N], E) ...</k>
+  rule [createRecClosure]: <k> mu F . E => recClosure(Rho[F <- !N], E) ...</k>
        <env> Rho </env>
        <store>... .Map => (!N:Int |-> recClosure(Rho[F <- !N], E)) ...</store>
   rule <k> recClosure(Rho, E) => E ~> Rho' ...</k>

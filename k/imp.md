@@ -121,7 +121,7 @@ while the binding can be anywhere in the `state` cell (the cell is torn at both
 sides).
 
 ```k
-rule [lookup]: <k> X:Id => I ...</k>
+rule <k> X:Id => I ...</k>
                <state>... X |-> I ...</state>
 ```
 
@@ -132,9 +132,9 @@ abstraction mechanism is at work here! That means that the rewrites in the rules
 below all happen at the beginning of the `k` cell.
 
 ```k
-rule [divide]: I1 / I2 => I1 /Int I2  requires I2 =/=Int 0
-rule [sum]: I1 + I2 => I1 +Int I2
-rule [negative]: - I1 => 0 -Int I1
+rule I1 / I2 => I1 /Int I2  requires I2 =/=Int 0
+rule I1 + I2 => I1 +Int I2
+rule - I1 => 0 -Int I1
 ```
 
 ### Boolean expressions
@@ -144,10 +144,10 @@ this is the reason we annotated the syntax of `&&` with the **K** attribute
 `strict(1)` instead of `strict`.
 
 ```k
-rule [smaller]: I1 < I2 => I1 <Int I2
-rule [notbool]: ! T => notBool T
-rule [and]: true && B => B
-rule [andFalse]: false && _ => false
+rule I1 < I2 => I1 <Int I2
+rule ! T => notBool T
+rule true && B => B
+rule false && _ => false
 ```
 
 ### Blocks and Statements
@@ -164,8 +164,8 @@ effectively giving them a bracket semantics; we can afford to do this only
 because we have no block-local variable declarations yet in IMP.
 
 ```k
-rule [empty]: {} => .K
-rule [block]: {S} => S
+rule {} => .K
+rule {S} => S
 ```
 
 ### Assignment
@@ -175,7 +175,7 @@ declared, otherwise the semantics will get stuck. At the same time, the
 assignment is dissolved.
 
 ```k
-rule [assign]: <k> X = I:Int; => .K ...</k> <state>... X |-> (_ => I) ...</state>
+rule <k> X = I:Int; => .K ...</k> <state>... X |-> (_ => I) ...</state>
 ```
 
 ### Sequential composition
@@ -184,7 +184,7 @@ Sequential composition is simply structurally translated into **K**'s builtin
 task sequentialization operation.
 
 ```k
-rule [sequential]: S1:Stmt S2:Stmt => S1 ~> S2
+rule S1:Stmt S2:Stmt => S1 ~> S2
 ```
 
 ### Conditional
@@ -195,8 +195,8 @@ annotated with the attribute `strict(1)` in the syntax module above, so only its
 first argument is allowed to be evaluated.
 
 ```k
-rule [ifTrue]: if (true)  S else _ => S
-rule [ifFalse]: if (false) _ else S => S
+rule if (true)  S else _ => S
+rule if (false) _ else S => S
 ```
 
 ### While loop
@@ -218,7 +218,7 @@ case we initialize the variable to 0 in the state, but only when the variable is
 not already declared (all variables are global and distinct in IMP).
 
 ```k
-  rule [declare]: <k> int (X,Xs => Xs);_ </k> <state> Rho:Map (.Map => X|->0) </state>
+  rule <k> int (X,Xs => Xs);_ </k> <state> Rho:Map (.Map => X|->0) </state>
     requires notBool (X in keys(Rho))
   rule int .Ids; S => S
 endmodule
