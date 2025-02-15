@@ -107,7 +107,7 @@ configuration <T>
                     <k> $PGM:Stmt </k>
                     <env> .Map </env>
                     <holds> .Map </holds>
-                    <id> 0 </id>
+                    <id> -1 </id>
                   </thread>
                 </threads>
 
@@ -115,7 +115,6 @@ configuration <T>
                 <busy> .Set </busy>
                 <terminated> .Set </terminated>
                 <nextLoc> 0 </nextLoc>
-                <output> .List </output>
               </T>
 ```
 
@@ -196,7 +195,7 @@ configuration <T>
 ```
 
 ```k
-  rule [spawn]: <thread>...
+  rule <thread>...
          <k> spawn S => !T:Int ...</k>
          <env> Env </env>
        ...</thread>
@@ -214,7 +213,7 @@ configuration <T>
 ```
 
 ```k
-  rule <k> join T:Int; => .K ...</k>
+  rule [join]: <k> join T:Int; => .K ...</k>
        <terminated>... SetItem(T) ...</terminated>
 ```
 
@@ -239,7 +238,7 @@ configuration <T>
 ```
 
 ```k
-  rule <k> release V; => .K ...</k> <holds>... V:Val |-> 0 => .Map ...</holds>
+  rule [release]: <k> release V; => .K ...</k> <holds>... V:Val |-> 0 => .Map ...</holds>
        <busy>... SetItem(V) => .Set ...</busy>
 ```
 ```k
@@ -277,7 +276,7 @@ configuration <T>
   rule S1:Stmt S2:Stmt => S1 ~> S2
   rule _:Val; => .K
 
-  rule if ( true) S else _ => S
+  rule [ifTrue]: if ( true) S else _ => S
   rule if (false) _ else S => S
 
   rule while (E) S => if (E) {S while(E)S}
@@ -290,9 +289,7 @@ configuration <T>
   syntax Map ::= Int "..." Int "|->" K [function]
   rule N...M |-> _ => .Map  requires N >Int M
   rule N...M |-> K => N |-> K (N +Int 1)...M |-> K  requires N <=Int M
-  rule <k> print((V:Val, Es) => Es); ...</k> <output>... .List => ListItem(V) </output>
-  rule print(.Vals); => .K
-
+  
   rule isKResult(_:Val) => true
   rule isKResult(_:Vals) => true
 endmodule

@@ -57,8 +57,7 @@ module LAMBDA
   rule [let]: let X = E in E':Exp => (lambda X . E') E
   rule [letrec]: letrec F:Id X = E in E' => let F = mu F . lambda X . E in E'
 
-  rule [lambdaToClosure]: <k> lambda X:Id . E => closure(Rho,X,E) ...</k>
-       <env> Rho </env>
+  rule [createClosure]: <k> lambda X:Id . E => closure(Rho,X,E) ...</k> <env> Rho </env>
 
   rule [createRecClosure]: <k> mu F . E => recClosure(Rho[F <- !N], E) ...</k>
        <env> Rho </env>
@@ -70,9 +69,9 @@ module LAMBDA
        <env> Rho' => Rho[X <- !N] </env>
        <store>... .Map => (!N:Int |-> V) ...</store>
 
-  rule [lookup]: <k> X => V ...</k>
+  rule <k> X => V ...</k>
        <env>... X |-> N ...</env>
        <store>... N |-> V ...</store>
 
-  rule [recoverEnv]: <k> _:Val ~> (Rho => .K) ...</k> <env> _ => Rho </env>
+  rule <k> _:Val ~> (Rho => .K) ...</k> <env> _ => Rho </env>
 endmodule

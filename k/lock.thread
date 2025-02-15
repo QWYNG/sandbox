@@ -1,0 +1,21 @@
+var x, lock_key;
+x = 2;
+lock_key = true;
+
+var t1;
+
+t1 = spawn {
+  acquire lock_key;
+  if (x > 1) {
+    x = x - 1;
+  }
+  release lock_key;
+};
+
+acquire lock_key;
+if (x > 1) {
+  x = x - 1;
+}
+release lock_key;
+
+join t1;

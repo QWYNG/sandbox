@@ -222,7 +222,7 @@ module CLASS
 
 
 ```k
-  rule <k> loc(L) = V:Val => V ...</k> <store>... L |-> (_ => V) ...</store>
+  rule [assign]: <k> loc(L) = V:Val => V ...</k> <store>... L |-> (_ => V) ...</store>
 ```
 
 ```k

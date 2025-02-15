@@ -1,0 +1,15 @@
+var x;
+x = 2;
+
+var t1;
+t1 = spawn {
+  if (x > 1) {
+    x = x - 1;
+  }
+};
+
+if (x > 1) {
+  x = x - 1;
+}
+
+join t1;

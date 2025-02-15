@@ -1,0 +1,5 @@
+  letrec map f = lambda list . if (empty? list) 
+                                 then [] 
+                                 else [f(head list) | map f (tail list)]
+    in let add3 = lambda n . (n + 3)
+      in (map add3 [1, 2, 3])

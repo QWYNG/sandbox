@@ -54,8 +54,10 @@ class MermaidConverter
 
     [results.map.with_index(1) do |result, i|
       <<~NODE
+        #{xml_to_dynamic_mermaid(result.before_configuration, "before_#{i}")}
+        after_#{i - 1} --> before_#{i}
         #{xml_to_dynamic_mermaid(result.after_configuration, "after_#{i}")}
-        after_#{i - 1} -- "`**#{result.rule.label}**`" --> after_#{i}
+        before_#{i} -- "`**#{result.rule.label}**`" --> after_#{i}
       NODE
     end.unshift(first_node).join("\n")]
   end
@@ -100,6 +102,11 @@ class MermaidConverter
           mermaid << "#{element_name}_#{element_name}_#{prefix}_#{i}[\"#{line}\"]"
         end
       end
+    elsif (element.children - element.element_children).map(&:text).find { |text| text.include?('ListItem') }
+      formated = extract_list_items(element_content)
+    formated.each.with_index do |line, i|
+        mermaid << "#{element_name}_#{element_name}_#{prefix}_#{i}[\"#{line}\"]"
+      end
     else
       element.element_children.each_with_index do |child, i|
         element_to_mermaid(child, mermaid, "#{prefix}_#{element_name}_#{i}")
@@ -110,4 +117,51 @@ class MermaidConverter
 
     mermaid
   end
+
+  def extract_list_items(input)
+    items = []
+    stack = []
+    current_item = ''
+    current_inside_item = ''
+    inside_list_item = false
+
+    input.each_char do |char|
+      current_item += char
+
+      if char == '('
+        stack.push(char)
+        inside_list_item = true if stack.size == 1 && current_item.strip.start_with?('ListItem')
+      elsif char == ')'
+        stack.pop
+      end
+
+      current_inside_item += char if inside_list_item
+
+      # 括弧がすべて閉じられた場合
+      next unless stack.empty? && inside_list_item
+
+      items << clean_and_indent(current_item.strip)
+      current_inside_item = ''
+      current_item = ''
+      inside_list_item = false
+    end
+
+    items
+  end
+
+  def clean_and_indent(input, indent_size = 2)
+    # 各行の先頭と末尾の空白を削除し、複数スペースを1つにまとめる
+    lines = input.lines.map(&:strip).reject(&:empty?) # 空行を削除
+    indent_level = 0
+  
+    lines.map do |line|
+      # 開き括弧が増えたらインデントを上げる
+      current_indent = ' ' * (indent_level * indent_size)
+      indent_level += line.count('(') - line.count(')')
+      indent_level = [indent_level, 0].max # ネガティブな値を防ぐ
+  
+      "#{current_indent}#{line}"
+    end.join("\n")
+  end
+    
 end
